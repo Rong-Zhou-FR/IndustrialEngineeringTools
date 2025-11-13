@@ -48,15 +48,15 @@ export class ReliabilityCalculatorService {
     
     for (let i = 0; i <= steps; i++) {
       const time = (maxTime / steps) * i;
-      labels.push(parseFloat(time.toFixed(2)));
-      values.push(parseFloat(Math.exp(-lambda * time).toFixed(4)));
+      labels.push(time);
+      values.push(Math.exp(-lambda * time));
     }
 
     return {
       model: 'exponential',
-      equation: `R(t) = e^(-${lambda.toFixed(6)} * t)`,
-      lambda: parseFloat(lambda.toFixed(6)),
-      reliability: parseFloat(Math.exp(-lambda * t).toFixed(4)),
+      equation: 'R(t) = e^(-λ * t)',
+      lambda: lambda,
+      reliability: Math.exp(-lambda * t),
       chartData: { labels, values },
     };
   }
@@ -78,15 +78,15 @@ export class ReliabilityCalculatorService {
     for (let i = 0; i <= steps; i++) {
       const time = (maxTime / steps) * i;
       const reliability = Math.max(0, a * time + 1); // Ensure non-negative
-      labels.push(parseFloat(time.toFixed(2)));
-      values.push(parseFloat(reliability.toFixed(4)));
+      labels.push(time);
+      values.push(reliability);
     }
 
     return {
       model: 'linear',
-      equation: `R(t) = ${a.toFixed(6)} * t + 1`,
-      a: parseFloat(a.toFixed(6)),
-      reliability: parseFloat((a * t + 1).toFixed(4)),
+      equation: 'R(t) = a * t + 1',
+      a: a,
+      reliability: a * t + 1,
       chartData: { labels, values },
     };
   }
