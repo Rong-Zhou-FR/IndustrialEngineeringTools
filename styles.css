@@ -344,7 +344,19 @@ header h1 {
 .step-actions {
     grid-column: 1 / -1;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.step-reorder-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-reorder {
+    padding: 6px 10px;
+    font-size: 0.85em;
+    min-width: auto;
 }
 
 /* Section amélioration */
@@ -669,11 +681,17 @@ footer {
     color: var(--secondary-color);
 }
 
+.reference-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 .reference-input-group {
     display: grid;
     grid-template-columns: 2fr 1fr 2fr auto;
     gap: 10px;
-    margin-bottom: 20px;
 }
 
 .reference-table {

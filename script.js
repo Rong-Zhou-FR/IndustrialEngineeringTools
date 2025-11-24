@@ -156,6 +156,7 @@ class ConsignmentProcedure {
 
         // Références
         document.getElementById('add-reference-btn').addEventListener('click', () => this.addReference());
+        document.getElementById('sort-references-btn').addEventListener('click', () => this.sortReferences());
         ['new-reference-document', 'new-reference-page', 'new-reference-type'].forEach(id => {
             document.getElementById(id).addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') this.addReference();
@@ -174,7 +175,7 @@ class ConsignmentProcedure {
         // Actions principales
         document.getElementById('save-btn').addEventListener('click', () => this.saveToFile());
         document.getElementById('load-btn').addEventListener('click', () => this.loadFromFile());
-        document.getElementById('print-btn').addEventListener('click', () => window.print());
+        document.getElementById('print-btn').addEventListener('click', () => this.generatePDF());
         document.getElementById('clear-btn').addEventListener('click', () => this.clearAll());
     }
 
@@ -478,6 +479,19 @@ class ConsignmentProcedure {
         this.updateStepsList();
         this.saveToStorage();
     }
+    
+    moveStep(index, direction) {
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= this.data.steps.length) return;
+        
+        // Swap the steps
+        const temp = this.data.steps[index];
+        this.data.steps[index] = this.data.steps[newIndex];
+        this.data.steps[newIndex] = temp;
+        
+        this.updateStepsList();
+        this.saveToStorage();
+    }
 
     addReference() {
         const documentName = document.getElementById('new-reference-document').value.trim();
@@ -512,6 +526,15 @@ class ConsignmentProcedure {
         this.data.references.splice(index, 1);
         this.updateReferenceList();
         this.saveToStorage();
+    }
+    
+    sortReferences() {
+        this.data.references.sort((a, b) => {
+            return a.document.localeCompare(b.document, 'fr', { sensitivity: 'base' });
+        });
+        this.updateReferenceList();
+        this.saveToStorage();
+        this.showNotification('✅ Références triées par ordre alphabétique', 'success');
     }
 
     updateReferenceList() {
@@ -632,6 +655,29 @@ class ConsignmentProcedure {
             // Actions
             const stepActions = document.createElement('div');
             stepActions.className = 'step-actions';
+            
+            // Reorder buttons
+            const reorderBtns = document.createElement('div');
+            reorderBtns.className = 'step-reorder-buttons';
+            
+            const btnUp = document.createElement('button');
+            btnUp.className = 'btn btn-secondary btn-small btn-reorder';
+            btnUp.textContent = '⬆️';
+            btnUp.title = 'Monter';
+            btnUp.disabled = index === 0;
+            btnUp.onclick = () => this.moveStep(index, -1);
+            
+            const btnDown = document.createElement('button');
+            btnDown.className = 'btn btn-secondary btn-small btn-reorder';
+            btnDown.textContent = '⬇️';
+            btnDown.title = 'Descendre';
+            btnDown.disabled = index === this.data.steps.length - 1;
+            btnDown.onclick = () => this.moveStep(index, 1);
+            
+            reorderBtns.appendChild(btnUp);
+            reorderBtns.appendChild(btnDown);
+            stepActions.appendChild(reorderBtns);
+            
             const btnDelete = document.createElement('button');
             btnDelete.className = 'btn btn-danger btn-small';
             btnDelete.textContent = '🗑️ Supprimer l\'étape';
@@ -815,6 +861,269 @@ class ConsignmentProcedure {
             this.updateDisplay();
             this.saveToStorage();
             this.showNotification('🗑️ Toutes les données ont été effacées', 'info');
+        }
+    }
+    
+    generatePDF() {
+        // Check if jsPDF is available
+        if (typeof jspdf === 'undefined' || !jspdf.jsPDF) {
+            this.showNotification('❌ Erreur: jsPDF non disponible. Utilisation de l\'impression navigateur.', 'error');
+            window.print();
+            return;
+        }
+        
+        try {
+            const { jsPDF } = jspdf;
+            const doc = new jsPDF();
+            
+            // Use Times New Roman for formal appearance
+            doc.setFont("times", "normal");
+            
+            let y = 20;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 20;
+            const contentWidth = pageWidth - 2 * margin;
+            
+            // Title - Black, formal
+            doc.setFontSize(18);
+            doc.setFont("times", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text('Procédure de Consignation', pageWidth / 2, y, { align: 'center' });
+            y += 10;
+            
+            doc.setFontSize(10);
+            doc.setFont("times", "italic");
+            doc.text('Documentation de sécurité pour intervention', pageWidth / 2, y, { align: 'center' });
+            y += 15;
+            
+            // Section: Informations sur l'intervention
+            doc.setFontSize(12);
+            doc.setFont("times", "bold");
+            doc.setTextColor(0, 51, 102); // Dark blue
+            doc.text('Informations sur l\'intervention', margin, y);
+            y += 8;
+            
+            doc.setFontSize(10);
+            doc.setFont("times", "normal");
+            doc.setTextColor(0, 0, 0);
+            
+            if (this.data.info.titre) {
+                doc.setFont("times", "bold");
+                doc.text(`Titre: `, margin, y);
+                doc.setFont("times", "normal");
+                doc.text(this.data.info.titre, margin + 20, y);
+                y += 6;
+            }
+            
+            if (this.data.info.description) {
+                doc.setFont("times", "bold");
+                doc.text('Description: ', margin, y);
+                y += 6;
+                doc.setFont("times", "normal");
+                const descLines = doc.splitTextToSize(this.data.info.description, contentWidth - 20);
+                doc.text(descLines, margin + 10, y);
+                y += descLines.length * 5 + 2;
+            }
+            
+            if (this.data.info.date || this.data.info.numero || this.data.info.personnel || this.data.info.localisation) {
+                const infoText = [];
+                if (this.data.info.date) infoText.push(`Date: ${this.data.info.date}`);
+                if (this.data.info.numero) infoText.push(`Numéro: ${this.data.info.numero}`);
+                if (this.data.info.personnel) infoText.push(`Personnel: ${this.data.info.personnel}`);
+                if (this.data.info.localisation) infoText.push(`Localisation: ${this.data.info.localisation}`);
+                doc.text(infoText.join(' | '), margin, y);
+                y += 8;
+            }
+            
+            // EPI/EPC
+            if (this.data.epiEpc && this.data.epiEpc.length > 0) {
+                doc.setFont("times", "bold");
+                doc.text('EPI/EPC requis: ', margin, y);
+                y += 6;
+                doc.setFont("times", "normal");
+                this.data.epiEpc.forEach(item => {
+                    doc.text(`  • ${item.name} (${item.type} - ${item.category})`, margin + 5, y);
+                    y += 5;
+                });
+                y += 3;
+            }
+            
+            y += 5;
+            
+            // Section: Avertissements
+            if (y > 250) {
+                doc.addPage();
+                y = 20;
+            }
+            
+            doc.setFontSize(12);
+            doc.setFont("times", "bold");
+            doc.setTextColor(153, 0, 0); // Dark red
+            doc.text('Avertissements', margin, y);
+            y += 8;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            
+            if (this.data.warnings.danger) {
+                doc.setFont("times", "bold");
+                doc.text('Danger:', margin, y);
+                y += 6;
+                doc.setFont("times", "normal");
+                const dangerLines = doc.splitTextToSize(this.data.warnings.danger, contentWidth - 20);
+                doc.text(dangerLines, margin + 10, y);
+                y += dangerLines.length * 5 + 3;
+            }
+            
+            if (this.data.warnings.analyseRisques) {
+                doc.setFont("times", "bold");
+                doc.text('Analyse de risques:', margin, y);
+                y += 6;
+                doc.setFont("times", "normal");
+                const risquesLines = doc.splitTextToSize(this.data.warnings.analyseRisques, contentWidth - 20);
+                doc.text(risquesLines, margin + 10, y);
+                y += risquesLines.length * 5 + 3;
+            }
+            
+            y += 5;
+            
+            // Section: Matériel nécessaire
+            if (this.data.materials && this.data.materials.length > 0) {
+                if (y > 250) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont("times", "bold");
+                doc.setTextColor(0, 102, 51); // Dark green
+                doc.text('Matériel nécessaire', margin, y);
+                y += 8;
+                
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                
+                this.data.materials.forEach(material => {
+                    doc.setFont("times", "normal");
+                    const total = material.quantity * material.price;
+                    doc.text(`${material.designation}`, margin, y);
+                    doc.text(`Qté: ${material.quantity}`, margin + 100, y);
+                    doc.text(`Prix: ${material.price.toFixed(2)} €`, margin + 130, y);
+                    doc.text(`Total: ${total.toFixed(2)} €`, margin + 160, y);
+                    y += 6;
+                });
+                
+                const grandTotal = this.data.materials.reduce((sum, m) => sum + (m.quantity * m.price), 0);
+                doc.setFont("times", "bold");
+                doc.text(`Total général: ${grandTotal.toFixed(2)} €`, margin + 140, y);
+                y += 10;
+            }
+            
+            // Section: Références
+            if (this.data.references && this.data.references.length > 0) {
+                if (y > 250) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont("times", "bold");
+                doc.setTextColor(102, 51, 153); // Purple
+                doc.text('Liste de Références', margin, y);
+                y += 8;
+                
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont("times", "normal");
+                
+                this.data.references.forEach(ref => {
+                    const refText = `${ref.document} - ${ref.page || 'N/A'} (${ref.type})`;
+                    const refLines = doc.splitTextToSize(refText, contentWidth);
+                    doc.text(refLines, margin, y);
+                    y += refLines.length * 5 + 2;
+                    
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                });
+                y += 5;
+            }
+            
+            // Section: Instructions de consignation
+            if (this.data.steps && this.data.steps.length > 0) {
+                if (y > 240) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont("times", "bold");
+                doc.setTextColor(102, 51, 153); // Purple
+                doc.text('Instructions de consignation', margin, y);
+                y += 8;
+                
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                
+                this.data.steps.forEach((step, index) => {
+                    doc.setFont("times", "bold");
+                    doc.text(`${index + 1}. ${step.repere || 'Étape ' + (index + 1)}`, margin, y);
+                    y += 6;
+                    
+                    if (step.instruction) {
+                        doc.setFont("times", "normal");
+                        const instrLines = doc.splitTextToSize(step.instruction, contentWidth - 10);
+                        doc.text(instrLines, margin + 5, y);
+                        y += instrLines.length * 5 + 3;
+                    }
+                    
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                });
+                y += 5;
+            }
+            
+            // Section: Pistes d'amélioration
+            if (this.data.improvements && this.data.improvements.length > 0) {
+                if (y > 250) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont("times", "bold");
+                doc.setTextColor(204, 153, 0); // Orange
+                doc.text('Pistes d\'amélioration', margin, y);
+                y += 8;
+                
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont("times", "normal");
+                
+                this.data.improvements.forEach(improvement => {
+                    doc.text(`• ${improvement}`, margin, y);
+                    y += 6;
+                    
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                });
+            }
+            
+            // Save the PDF
+            const filename = `Procedure_Consignation_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+            this.showNotification('✅ PDF généré avec succès!', 'success');
+            
+        } catch (error) {
+            console.error('Erreur lors de la génération PDF:', error);
+            this.showNotification('❌ Erreur lors de la génération du PDF', 'error');
+            // Fallback to browser print
+            window.print();
         }
     }
 
