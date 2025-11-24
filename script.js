@@ -118,8 +118,18 @@ class ConsignmentProcedure {
     }
 
     addStep() {
+        // Use crypto.randomUUID with a robust fallback
+        let id;
+        if (crypto.randomUUID) {
+            id = crypto.randomUUID();
+        } else {
+            // Fallback: combine timestamp with counter for better uniqueness
+            if (!this._stepCounter) this._stepCounter = 0;
+            id = `step-${Date.now()}-${++this._stepCounter}`;
+        }
+        
         const step = {
-            id: crypto.randomUUID ? crypto.randomUUID() : `step-${Date.now()}-${Math.random()}`,
+            id: id,
             repere: '',
             instruction: '',
             photo: ''
@@ -195,16 +205,19 @@ class ConsignmentProcedure {
             photoUpload.className = 'photo-upload';
             
             if (step.photo) {
-                const img = document.createElement('img');
-                img.src = step.photo;
-                img.className = 'photo-preview';
-                img.alt = 'Photo';
-                photoUpload.appendChild(img);
+                // Validate that photo is a data URL before using it
+                if (step.photo.startsWith('data:image/')) {
+                    const img = document.createElement('img');
+                    img.src = step.photo;
+                    img.className = 'photo-preview';
+                    img.alt = 'Photo';
+                    photoUpload.appendChild(img);
+                }
             }
             
             const label = document.createElement('label');
             label.className = 'photo-label';
-            label.textContent = `📷 ${step.photo ? 'Changer' : 'Ajouter'} photo`;
+            label.textContent = `📷 ${step.photo && step.photo.startsWith('data:image/') ? 'Changer' : 'Ajouter'} photo`;
             const inputFile = document.createElement('input');
             inputFile.type = 'file';
             inputFile.accept = 'image/*';
@@ -328,8 +341,8 @@ class ConsignmentProcedure {
         const url = URL.createObjectURL(dataBlob);
         const link = document.createElement('a');
         link.href = url;
-        // Sanitize filename to prevent invalid characters
-        const sanitizedNumero = (this.data.info.numero || 'procedure').replace(/[^a-z0-9_-]/gi, '_');
+        // Sanitize filename to prevent invalid characters (only alphanumeric and underscore)
+        const sanitizedNumero = (this.data.info.numero || 'procedure').replace(/[^a-z0-9_]/gi, '_');
         link.download = `consignation-${sanitizedNumero}-${new Date().toISOString().split('T')[0]}.json`;
         link.click();
         URL.revokeObjectURL(url);
