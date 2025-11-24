@@ -20,22 +20,92 @@ class ConsignmentProcedure {
     
     initDangerSuggestions() {
         return [
-            { name: 'Tension électrique', color: 'tension-electrique', requiresValue: true, unit: 'V' },
-            { name: 'Air comprimé', color: 'air-comprime', requiresValue: true, unit: 'bar' },
-            { name: 'Pression hydraulique', color: 'pression-hydraulique', requiresValue: true, unit: 'bar' },
-            { name: 'Instabilité mécanique', color: 'instabilite-mecanique', requiresValue: false },
-            { name: 'Travail en hauteur', color: 'hauteur', requiresValue: true, unit: 'm' },
-            { name: 'Risque d\'électrocution', color: 'tension-electrique', requiresValue: false },
-            { name: 'Risque de chute', color: 'hauteur', requiresValue: false },
-            { name: 'Projection de particules', color: 'instabilite-mecanique', requiresValue: false },
-            { name: 'Écrasement', color: 'instabilite-mecanique', requiresValue: false },
-            { name: 'Coupure', color: 'instabilite-mecanique', requiresValue: false },
-            { name: 'Température élevée', color: 'autre', requiresValue: true, unit: '°C' },
-            { name: 'Produit chimique', color: 'autre', requiresValue: false },
-            { name: 'Rayonnement', color: 'autre', requiresValue: false },
-            { name: 'Bruit excessif', color: 'autre', requiresValue: true, unit: 'dB' },
-            { name: 'Espace confiné', color: 'autre', requiresValue: false }
+            { name: 'Tension électrique', color: 'tension-electrique', requiresValue: true, unit: 'V', pictogram: 'DANGER-electricite.jpg' },
+            { name: 'Air comprimé', color: 'air-comprime', requiresValue: true, unit: 'bar', pictogram: 'DANGER-general.jpg' },
+            { name: 'Pression hydraulique', color: 'pression-hydraulique', requiresValue: true, unit: 'bar', pictogram: 'DANGER-general.jpg' },
+            { name: 'Instabilité mécanique', color: 'instabilite-mecanique', requiresValue: false, pictogram: 'DANGER-general.jpg' },
+            { name: 'Travail en hauteur', color: 'hauteur', requiresValue: true, unit: 'm', pictogram: 'DANGER-chute.jpg' },
+            { name: 'Risque d\'électrocution', color: 'tension-electrique', requiresValue: false, pictogram: 'DANGER-electricite.jpg' },
+            { name: 'Risque de chute', color: 'hauteur', requiresValue: false, pictogram: 'DANGER-chute.jpg' },
+            { name: 'Projection de particules', color: 'instabilite-mecanique', requiresValue: false, pictogram: 'DANGER-general.jpg' },
+            { name: 'Écrasement', color: 'instabilite-mecanique', requiresValue: false, pictogram: 'DANGER-charge-suspendue.jpg' },
+            { name: 'Coupure', color: 'instabilite-mecanique', requiresValue: false, pictogram: 'DANGER-general.jpg' },
+            { name: 'Température élevée', color: 'autre', requiresValue: true, unit: '°C', pictogram: 'DANGER-general.jpg' },
+            { name: 'Produit chimique', color: 'autre', requiresValue: false, pictogram: 'DANGER-produit-nocif.jpg' },
+            { name: 'Rayonnement', color: 'autre', requiresValue: false, pictogram: 'DANGER-radiations-non-ionisantes.jpg' },
+            { name: 'Bruit excessif', color: 'autre', requiresValue: true, unit: 'dB', pictogram: 'DANGER-general.jpg' },
+            { name: 'Espace confiné', color: 'autre', requiresValue: false, pictogram: 'DANGER-general.jpg' },
+            { name: 'Atmosphère explosive', color: 'autre', requiresValue: false, pictogram: 'DANGER-atmosphere-explosive.jpg' },
+            { name: 'Froid / Gel', color: 'autre', requiresValue: true, unit: '°C', pictogram: 'DANGER-froid-gel.jpg' },
+            { name: 'Charge suspendue', color: 'instabilite-mecanique', requiresValue: false, pictogram: 'DANGER-charge-suspendue.jpg' },
+            { name: 'Chariot élévateur', color: 'instabilite-mecanique', requiresValue: false, pictogram: 'DANGER-chariot.jpg' },
+            { name: 'Laser', color: 'autre', requiresValue: false, pictogram: 'DANGER-laser.jpg' },
+            { name: 'Produit corrosif', color: 'autre', requiresValue: false, pictogram: 'DANGER-produit-corrosif.jpg' },
+            { name: 'Produit explosif', color: 'autre', requiresValue: false, pictogram: 'DANGER-produit-explosif.jpg' },
+            { name: 'Produit inflammable', color: 'autre', requiresValue: false, pictogram: 'DANGER-produit-inflammable.jpg' },
+            { name: 'Produit toxique', color: 'autre', requiresValue: false, pictogram: 'DANGER-produit-toxique.jpg' },
+            { name: 'Risque biologique', color: 'autre', requiresValue: false, pictogram: 'DANGER-risque-biologique.jpg' },
+            { name: 'Radioactivité', color: 'autre', requiresValue: false, pictogram: 'DANGER-radioactivite.jpg' },
+            { name: 'Champ magnétique', color: 'autre', requiresValue: false, pictogram: 'DANGER-champ-magnetique.jpg' },
+            { name: 'Trébuchement', color: 'hauteur', requiresValue: false, pictogram: 'DANGER-trebuchement.jpg' }
         ];
+    }
+    
+    // Mapping EPI/EPC names to pictogram files
+    getEpiEpcPictogram(name) {
+        const lowerName = name.toLowerCase();
+        const pictogramMap = {
+            'casque': 'OBLIGATION-casque.jpg',
+            'casque isolant': 'OBLIGATION-casque.jpg',
+            'casque de chantier': 'OBLIGATION-casque.jpg',
+            'casque antibruit': 'OBLIGATION-casque-antibruit.jpg',
+            'protections auditives': 'OBLIGATION-casque-antibruit.jpg',
+            'lunettes': 'OBLIGATION-lunettes.jpg',
+            'lunettes isolantes': 'OBLIGATION-lunettes.jpg',
+            'lunettes de protection': 'OBLIGATION-lunettes.jpg',
+            'gants': 'OBLIGATION-gants.jpg',
+            'gants isolants': 'OBLIGATION-gants.jpg',
+            'gants anti-coupure': 'OBLIGATION-gants.jpg',
+            'gants de manutention': 'OBLIGATION-gants.jpg',
+            'chaussures': 'OBLIGATION-chaussures.jpg',
+            'chaussures de sécurité': 'OBLIGATION-chaussures.jpg',
+            'chaussures isolantes': 'OBLIGATION-chaussures.jpg',
+            'harnais': 'OBLIGATION-harnais.jpg',
+            'harnais de sécurité': 'OBLIGATION-harnais.jpg',
+            'visière': 'OBLIGATION-visiere.jpg',
+            'écran facial': 'OBLIGATION-visiere.jpg',
+            'écran facial isolant': 'OBLIGATION-visiere.jpg',
+            'masque': 'OBLIGATION-protection-voies-espiratoires.jpg',
+            'masque respiratoire': 'OBLIGATION-protection-voies-espiratoires.jpg',
+            'combinaison': 'OBLIGATION-combinaison.jpg',
+            'vêtements isolants': 'OBLIGATION-combinaison.jpg',
+            'vêtements de travail': 'OBLIGATION-combinaison.jpg',
+            'gilet': 'OBLIGATION-general.jpg',
+            'gilet haute visibilité': 'OBLIGATION-general.jpg'
+        };
+        
+        // Try exact match first
+        if (pictogramMap[lowerName]) {
+            return pictogramMap[lowerName];
+        }
+        
+        // Try partial match
+        for (const [key, value] of Object.entries(pictogramMap)) {
+            if (lowerName.includes(key) || key.includes(lowerName)) {
+                return value;
+            }
+        }
+        
+        return 'OBLIGATION-general.jpg';
+    }
+    
+    // Get danger pictogram based on danger name
+    getDangerPictogram(dangerName) {
+        const suggestion = this.dangerSuggestions.find(d => d.name === dangerName);
+        if (suggestion && suggestion.pictogram) {
+            return suggestion.pictogram;
+        }
+        return 'DANGER-general.jpg';
     }
     
     initMarked() {
@@ -1041,7 +1111,76 @@ class ConsignmentProcedure {
         }
     }
     
-    generatePDF() {
+    // Helper to load an image as base64
+    loadImageAsBase64(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                try {
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                } catch (e) {
+                    reject(e);
+                }
+            };
+            img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+            img.src = src;
+        });
+    }
+    
+    // Preload all needed pictograms for PDF
+    async preloadPictograms() {
+        const pictograms = {};
+        
+        // Collect all unique pictograms needed
+        const obligationPictograms = new Set();
+        const dangerPictograms = new Set();
+        
+        // EPI/EPC pictograms
+        if (this.data.epiEpc) {
+            this.data.epiEpc.forEach(item => {
+                const picto = this.getEpiEpcPictogram(item.name);
+                obligationPictograms.add(picto);
+            });
+        }
+        
+        // Danger pictograms
+        if (this.data.warnings.dangers) {
+            this.data.warnings.dangers.forEach(danger => {
+                const picto = this.getDangerPictogram(danger.name);
+                dangerPictograms.add(picto);
+            });
+        }
+        
+        // Load obligation pictograms
+        for (const picto of obligationPictograms) {
+            try {
+                const base64 = await this.loadImageAsBase64(`resources/Pictogrammes_jpeg/OBLIGATION/${picto}`);
+                pictograms[`OBLIGATION/${picto}`] = base64;
+            } catch (e) {
+                console.warn(`Could not load pictogram: ${picto}`);
+            }
+        }
+        
+        // Load danger pictograms
+        for (const picto of dangerPictograms) {
+            try {
+                const base64 = await this.loadImageAsBase64(`resources/Pictogrammes_jpeg/AVERTISSEMENT_DANGER/${picto}`);
+                pictograms[`DANGER/${picto}`] = base64;
+            } catch (e) {
+                console.warn(`Could not load pictogram: ${picto}`);
+            }
+        }
+        
+        return pictograms;
+    }
+    
+    async generatePDF() {
         // Check if jsPDF is available
         if (typeof jspdf === 'undefined' || !jspdf.jsPDF) {
             this.showNotification('❌ Erreur: jsPDF non disponible. Utilisation de l\'impression navigateur.', 'error');
@@ -1050,6 +1189,12 @@ class ConsignmentProcedure {
         }
         
         try {
+            // Show loading notification
+            this.showNotification('📄 Génération du PDF en cours...', 'info');
+            
+            // Preload pictograms
+            const pictograms = await this.preloadPictograms();
+            
             const { jsPDF } = jspdf;
             const doc = new jsPDF();
             
@@ -1060,6 +1205,7 @@ class ConsignmentProcedure {
             const pageWidth = doc.internal.pageSize.getWidth();
             const margin = 20;
             const contentWidth = pageWidth - 2 * margin;
+            const pictoSize = 8; // Size of pictogram in mm
             
             // Title - Black, formal
             doc.setFontSize(18);
@@ -1116,7 +1262,7 @@ class ConsignmentProcedure {
             if (this.data.epiEpc && this.data.epiEpc.length > 0) {
                 doc.setFont("times", "bold");
                 doc.text('EPI/EPC requis: ', margin, y);
-                y += 6;
+                y += 8;
                 doc.setFont("times", "normal");
                 
                 this.data.epiEpc.forEach(item => {
@@ -1130,11 +1276,27 @@ class ConsignmentProcedure {
                         'personnalisé': [99, 102, 241] // indigo
                     };
                     
+                    // Try to add pictogram
+                    const pictoFile = this.getEpiEpcPictogram(item.name);
+                    const pictoKey = `OBLIGATION/${pictoFile}`;
+                    if (pictograms[pictoKey]) {
+                        try {
+                            doc.addImage(pictograms[pictoKey], 'JPEG', margin + 5, y - 5, pictoSize, pictoSize);
+                        } catch (e) {
+                            console.warn('Failed to add pictogram:', e);
+                        }
+                    }
+                    
                     const rgb = categoryColorMap[item.category.toLowerCase()] || [100, 116, 139];
                     doc.setTextColor(rgb[0], rgb[1], rgb[2]);
-                    doc.text(`  • ${item.name} (${item.type} - ${item.category})`, margin + 5, y);
+                    doc.text(`${item.name} (${item.type} - ${item.category})`, margin + 5 + pictoSize + 3, y);
                     doc.setTextColor(0, 0, 0);
-                    y += 5;
+                    y += Math.max(pictoSize, 5) + 2;
+                    
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
                 });
                 y += 3;
             }
@@ -1156,11 +1318,11 @@ class ConsignmentProcedure {
             doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
             
-            // Render dangers with colored tags
+            // Render dangers with colored tags and pictograms
             if (this.data.warnings.dangers && this.data.warnings.dangers.length > 0) {
                 doc.setFont("times", "bold");
                 doc.text('Dangers identifiés:', margin, y);
-                y += 6;
+                y += 8;
                 doc.setFont("times", "normal");
                 
                 this.data.warnings.dangers.forEach(danger => {
@@ -1174,16 +1336,32 @@ class ConsignmentProcedure {
                         'autre': [100, 116, 139] // gray
                     };
                     
+                    // Try to add pictogram
+                    const pictoFile = this.getDangerPictogram(danger.name);
+                    const pictoKey = `DANGER/${pictoFile}`;
+                    if (pictograms[pictoKey]) {
+                        try {
+                            doc.addImage(pictograms[pictoKey], 'JPEG', margin + 5, y - 5, pictoSize, pictoSize);
+                        } catch (e) {
+                            console.warn('Failed to add danger pictogram:', e);
+                        }
+                    }
+                    
                     const rgb = colorMap[danger.color] || [100, 116, 139];
                     doc.setTextColor(rgb[0], rgb[1], rgb[2]);
                     doc.setFont("times", "bold");
                     
                     const dangerText = danger.value ? `${danger.name}: ${danger.value}` : danger.name;
-                    doc.text(`• ${dangerText}`, margin + 5, y);
-                    y += 5;
+                    doc.text(dangerText, margin + 5 + pictoSize + 3, y);
+                    y += Math.max(pictoSize, 5) + 2;
                     
                     doc.setTextColor(0, 0, 0);
                     doc.setFont("times", "normal");
+                    
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
                 });
                 y += 3;
             }
@@ -1195,31 +1373,57 @@ class ConsignmentProcedure {
                 y += 6;
                 doc.setFont("times", "normal");
                 
-                // Try to render markdown with simple formatting
+                // Multi-level markdown to plain text conversion for PDF
                 let analysisText = this.data.warnings.analyseRisques;
                 
-                // Simple markdown to plain text conversion for PDF
                 const lines = analysisText.split('\n');
                 lines.forEach(line => {
+                    // Calculate indentation level (2 spaces = 1 level, or tab)
+                    const leadingSpaces = line.match(/^(\s*)/)[1].length;
+                    const indentLevel = Math.floor(leadingSpaces / 2);
                     const trimmed = line.trim();
+                    
+                    // Base indent from margin
+                    const baseIndent = margin + 5;
+                    // Additional indent per level (5 units per level)
+                    const levelIndent = indentLevel * 5;
+                    const currentIndent = baseIndent + levelIndent;
+                    
+                    // Choose bullet character based on level
+                    const bulletChars = ['•', '◦', '▪', '▫', '-'];
+                    const bullet = bulletChars[Math.min(indentLevel, bulletChars.length - 1)];
+                    
                     if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
                         // Bullet point
                         const content = trimmed.substring(1).trim();
                         // Remove markdown bold markers
                         const cleanContent = content.replace(/\*\*(.*?)\*\*/g, '$1');
-                        doc.text(`  • ${cleanContent}`, margin + 5, y);
+                        const textLines = doc.splitTextToSize(cleanContent, contentWidth - 20 - levelIndent);
+                        doc.text(`${bullet} ${textLines[0]}`, currentIndent, y);
                         y += 5;
+                        // Handle wrapped lines
+                        for (let i = 1; i < textLines.length; i++) {
+                            doc.text(textLines[i], currentIndent + 4, y);
+                            y += 5;
+                        }
                     } else if (trimmed.match(/^\d+\./)) {
                         // Numbered list
                         const content = trimmed.replace(/^\d+\./, '').trim();
                         const cleanContent = content.replace(/\*\*(.*?)\*\*/g, '$1');
-                        doc.text(`  ${trimmed.match(/^\d+\./)[0]} ${cleanContent}`, margin + 5, y);
+                        const number = trimmed.match(/^\d+\./)[0];
+                        const textLines = doc.splitTextToSize(cleanContent, contentWidth - 20 - levelIndent);
+                        doc.text(`${number} ${textLines[0]}`, currentIndent, y);
                         y += 5;
+                        // Handle wrapped lines
+                        for (let i = 1; i < textLines.length; i++) {
+                            doc.text(textLines[i], currentIndent + 6, y);
+                            y += 5;
+                        }
                     } else if (trimmed) {
                         // Regular paragraph
                         const cleanContent = trimmed.replace(/\*\*(.*?)\*\*/g, '$1');
-                        const textLines = doc.splitTextToSize(cleanContent, contentWidth - 20);
-                        doc.text(textLines, margin + 10, y);
+                        const textLines = doc.splitTextToSize(cleanContent, contentWidth - 20 - levelIndent);
+                        doc.text(textLines, currentIndent, y);
                         y += textLines.length * 5 + 2;
                     }
                     
