@@ -188,22 +188,12 @@ const calculateExponential = (n0, time, n1) => {
   const ratio = n1 / n0
   const lambda = -Math.log(ratio) / time
 
-  // Generate chart data as {x, y} points for proper numeric axis scaling
-  const maxTime = time * 3
-  const steps = 100
-  const dataPoints = []
-
-  for (let i = 0; i <= steps; i++) {
-    const currentTime = (maxTime / steps) * i
-    dataPoints.push({ x: currentTime, y: Math.exp(-lambda * currentTime) })
-  }
-
   return {
     model: 'exponential',
     equation: 'R(t) = e^(-λ * t)',
     lambda,
     reliability: Math.exp(-lambda * time),
-    chartData: { dataPoints }
+    verificationTime: time
   }
 }
 
@@ -211,23 +201,12 @@ const calculateLinear = (n0, time, n1) => {
   const ratio = n1 / n0
   const a = (ratio - 1) / time
 
-  // Generate chart data as {x, y} points for proper numeric axis scaling
-  const maxTime = time * 3
-  const steps = 100
-  const dataPoints = []
-
-  for (let i = 0; i <= steps; i++) {
-    const currentTime = (maxTime / steps) * i
-    const reliability = Math.max(0, a * currentTime + 1)
-    dataPoints.push({ x: currentTime, y: reliability })
-  }
-
   return {
     model: 'linear',
     equation: 'R(t) = a * t + 1',
     a,
     reliability: a * time + 1,
-    chartData: { dataPoints }
+    verificationTime: time
   }
 }
 
@@ -255,6 +234,45 @@ const renderEquation = () => {
   }
 }
 
+// Generate data points dynamically based on visible domain
+const generateDataPoints = () => {
+  if (!result.value)
+    return []
+
+  const verificationTime = result.value.verificationTime
+  // Default max time is 3x verification time, but extend if tEnd is larger
+  const defaultMaxTime = verificationTime * 3
+  const maxTime = (!isNaN(tEnd.value) && tEnd.value != null && tEnd.value > defaultMaxTime)
+    ? tEnd.value * 1.1 // Add 10% buffer beyond tEnd
+    : defaultMaxTime
+
+  const startTime = (!isNaN(tStart.value) && tStart.value != null && tStart.value > 0)
+    ? Math.max(0, tStart.value * 0.9) // Start slightly before tStart
+    : 0
+
+  const steps = 200 // More points for smoother curves over larger ranges
+  const dataPoints = []
+
+  if (result.value.model === 'exponential') {
+    const lambda = result.value.lambda
+    for (let i = 0; i <= steps; i++) {
+      const currentTime = startTime + ((maxTime - startTime) / steps) * i
+      dataPoints.push({ x: currentTime, y: Math.exp(-lambda * currentTime) })
+    }
+  }
+  else {
+    // Linear model
+    const a = result.value.a
+    for (let i = 0; i <= steps; i++) {
+      const currentTime = startTime + ((maxTime - startTime) / steps) * i
+      const reliability = Math.max(0, a * currentTime + 1)
+      dataPoints.push({ x: currentTime, y: reliability })
+    }
+  }
+
+  return dataPoints
+}
+
 const renderChart = () => {
   if (!chartCanvas.value || !result.value || !Chart)
     return
@@ -264,6 +282,9 @@ const renderChart = () => {
   }
 
   const useLogScale = scaleType.value === 'logarithmic'
+
+  // Generate data points dynamically based on visible domain
+  const dataPoints = generateDataPoints()
 
   const yAxisConfig = useLogScale
     ? {
@@ -314,7 +335,7 @@ const renderChart = () => {
     data: {
       datasets: [{
         label: 'Reliability R(t)',
-        data: result.value.chartData.dataPoints,
+        data: dataPoints,
         borderColor: 'rgb(102, 126, 234)',
         backgroundColor: 'rgba(102, 126, 234, 0.1)',
         tension: 0.4,
