@@ -108,7 +108,6 @@ export class WelcomeController {
     <p class="description">${welcomeInfo.description}</p>
     
     <div class="datetime">
-      <h3>Current Date & Time</h3>
       <p id="date">${welcomeInfo.currentDateTime.date}</p>
       <p class="clock" id="time">${welcomeInfo.currentDateTime.time}</p>
     </div>
