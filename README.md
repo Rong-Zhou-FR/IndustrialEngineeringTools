@@ -1,6 +1,6 @@
 # Industrial Engineering Tools
 
-A comprehensive Nest.js web application for industrial engineering calculations, built by Rong ZHOU.
+A comprehensive Nuxt.js web application for industrial engineering calculations, built by Rong ZHOU.
 
 ## Features
 
@@ -27,27 +27,41 @@ A comprehensive Nest.js web application for industrial engineering calculations,
   - Export results as PDF
   - Import previous JSON results
 
+### Procédure de Consignation (Lockout/Tagout Procedure)
+- **Intervention Information**: Title, description, date, personnel, location
+- **Safety Equipment (EPI/EPC)**: Searchable suggestions for safety equipment
+- **Danger Identification**: Pre-defined danger categories with value inputs
+- **Risk Analysis**: Markdown-supported text area for detailed risk analysis
+- **Materials List**: Track required materials with quantities and pricing
+- **Reference Documents**: Organize reference documents by type
+- **Step-by-step Instructions**: Add, reorder, and attach photos to each step
+- **Improvement Suggestions**: Track ideas for process improvement
+- **Export/Import**: Save and load procedures as JSON files
+
 ## Installation
 
 ```bash
 # Install dependencies
 npm install
 
-# Build the application
+# Start development server
+npm run dev
+
+# Build for production
 npm run build
 
-# Start the application
-npm start
+# Preview production build
+npm run preview
 
-# Start in development mode with hot reload
-npm run start:dev
+# Generate static site
+npm run generate
 ```
 
 ## Usage
 
 1. Start the application:
    ```bash
-   npm run start:dev
+   npm run dev
    ```
 
 2. Open your browser and navigate to:
@@ -55,28 +69,35 @@ npm run start:dev
    http://localhost:3000
    ```
 
-3. From the welcome screen, click on "Reliability Calculator" to access the calculator
-
-4. Select your preferred model (Exponential or Linear)
-
-5. Enter the input parameters:
-   - Total number of pieces (N₀)
-   - Time of verification (t)
-   - Number of pieces still functional (N₁)
-
-6. Click "Calculate Reliability" to see results and interactive chart
-
-7. Export your results as JSON or PDF for future reference
-
-8. Import previous JSON results to view historical calculations
+3. From the welcome screen, click on "Reliability Calculator" or "Procédure de Consignation" to access the tools
 
 ## Technology Stack
 
-- **Framework**: Nest.js
-- **Language**: TypeScript
+- **Framework**: Nuxt.js 4
+- **Language**: Vue 3 + TypeScript
 - **Charting**: Chart.js
-- **PDF Generation**: PDFKit
-- **Validation**: class-validator, class-transformer
+- **Math Rendering**: KaTeX
+- **Markdown**: marked
+
+## Project Structure
+
+```
+├── app/
+│   ├── pages/              # Page components
+│   │   ├── index.vue       # Home page
+│   │   ├── reliability-calculator.vue
+│   │   └── consignment.vue
+│   ├── app.vue             # Root component
+│   └── components/         # Reusable components
+├── assets/
+│   └── css/
+│       └── main.css        # Global styles
+├── public/
+│   ├── fonts/              # KaTeX fonts
+│   └── js/                 # External libraries
+├── nuxt.config.ts          # Nuxt configuration
+└── package.json
+```
 
 ## Author
 
