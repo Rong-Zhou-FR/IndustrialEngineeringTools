@@ -1,0 +1,1503 @@
+<template>
+  <div class="consignment-page">
+    <div class="container">
+      <header>
+        <NuxtLink to="/" class="back-btn">← Back to Home</NuxtLink>
+        <h1>📋 Procédure de Consignation</h1>
+        <p class="subtitle">Documentation de sécurité pour intervention</p>
+      </header>
+
+      <!-- Informations sur l'intervention -->
+      <section class="card info-section">
+        <h2>📝 Informations sur l'intervention</h2>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="titre">Titre :</label>
+            <input id="titre" v-model="data.info.titre" type="text" class="form-control" placeholder="Titre de l'intervention">
+          </div>
+          <div class="form-group full-width">
+            <label for="description">Description :</label>
+            <textarea id="description" v-model="data.info.description" class="form-control" rows="3" placeholder="Description détaillée de l'intervention"/>
+          </div>
+          <div class="form-group">
+            <label for="date">Date :</label>
+            <input id="date" v-model="data.info.date" type="date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="numero">Numéro :</label>
+            <input id="numero" v-model="data.info.numero" type="text" class="form-control" placeholder="N° d'intervention">
+          </div>
+          <div class="form-group">
+            <label for="personnel">Personnel :</label>
+            <input id="personnel" v-model="data.info.personnel" type="text" class="form-control" placeholder="Nom du personnel">
+          </div>
+          <div class="form-group">
+            <label for="localisation">Localisation :</label>
+            <input id="localisation" v-model="data.info.localisation" type="text" class="form-control" placeholder="Lieu d'intervention">
+          </div>
+          <div class="form-group full-width">
+            <label>EPI/EPC requis :</label>
+            <div class="epi-epc-input-container">
+              <input
+                v-model="epiEpcQuery"
+                type="text"
+                class="form-control"
+                placeholder="Commencer à taper pour voir les suggestions..."
+                @input="handleEpiEpcInput"
+                @keydown.enter.prevent="addCustomEpiEpc"
+                @keydown.escape="hideSuggestions"
+              >
+              <div v-if="showEpiEpcSuggestions" class="suggestions-dropdown">
+                <template v-for="(group, key) in groupedEpiEpcMatches" :key="key">
+                  <div class="suggestion-category">{{ group.type }} - {{ group.category }}</div>
+                  <div
+                    v-for="item in group.items"
+                    :key="item"
+                    class="suggestion-item"
+                    @click="addEpiEpc(item, group.type, group.category)"
+                  >
+                    <span class="suggestion-name">{{ item }}</span>
+                    <div class="suggestion-badges">
+                      <span :class="['badge', `badge-${group.type.toLowerCase()}`]">{{ group.type }}</span>
+                      <span :class="['badge', `badge-${group.category}`]">{{ group.category }}</span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <div class="epi-epc-list">
+              <div v-for="(item, index) in data.epiEpc" :key="index" class="epi-epc-tag">
+                <span class="tag-name">{{ item.name }}</span>
+                <div class="suggestion-badges">
+                  <span :class="['badge', `badge-${item.type.toLowerCase()}`]">{{ item.type }}</span>
+                  <span :class="['badge', `badge-${item.category}`]">{{ item.category }}</span>
+                </div>
+                <span class="tag-remove" @click="removeEpiEpc(index)">×</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Avertissement -->
+      <section class="card warning-section">
+        <h2>⚠️ Avertissements</h2>
+        <div class="warning-content">
+          <div class="danger-box">
+            <h3>🚨 Danger</h3>
+            <div class="danger-input-container">
+              <input
+                v-model="dangerQuery"
+                type="text"
+                class="form-control"
+                placeholder="Commencer à taper pour voir les dangers..."
+                @input="handleDangerInput"
+                @keydown.enter.prevent="addCustomDanger"
+                @keydown.escape="hideDangerSuggestions"
+              >
+              <div v-if="showDangerSuggestions" class="suggestions-dropdown">
+                <div
+                  v-for="danger in dangerMatches"
+                  :key="danger.name"
+                  class="suggestion-item"
+                  @click="selectDanger(danger)"
+                >
+                  <span class="suggestion-name">{{ danger.name }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="danger-list">
+              <div v-for="(danger, index) in data.warnings.dangers" :key="index" :class="['danger-tag', danger.color]">
+                <span class="danger-tag-name">{{ danger.name }}</span>
+                <span v-if="danger.value" class="danger-tag-value">{{ danger.value }}</span>
+                <button class="danger-tag-remove" @click="removeDanger(index)">×</button>
+              </div>
+            </div>
+          </div>
+          <div class="risk-box">
+            <h3>🔍 Analyse de risques</h3>
+            <textarea
+              v-model="data.warnings.analyseRisques"
+              class="form-control markdown-support"
+              rows="10"
+              placeholder="Analyse détaillée des risques...&#10;&#10;Exemple (markdown supporté):&#10;- **Risque électrique**: Nécessite consignation complète&#10;- **Mesures préventives**:&#10;  - Vérifier VAT avant intervention&#10;  - Porter EPI électrique adapté"
+            />
+            <div v-if="analyseRisquesPreview" class="markdown-preview" v-html="analyseRisquesPreview"/>
+          </div>
+        </div>
+      </section>
+
+      <!-- Matériel nécessaire -->
+      <section class="card material-section">
+        <h2>🔧 Matériel nécessaire</h2>
+        <div class="material-input-group">
+          <input v-model="newMaterial.designation" type="text" class="form-control" placeholder="Désignation" @keypress.enter="addMaterial">
+          <input v-model.number="newMaterial.quantity" type="number" class="form-control" placeholder="Nombre" min="1">
+          <input v-model.number="newMaterial.price" type="number" class="form-control" placeholder="Prix Unitaire HT (€)" min="0" step="0.01">
+          <button class="btn btn-primary" @click="addMaterial">Ajouter</button>
+        </div>
+        <div class="material-table">
+          <div class="material-table-header">
+            <div>Désignation</div>
+            <div>Nombre</div>
+            <div>Prix Unitaire HT</div>
+            <div>Total HT</div>
+            <div>Actions</div>
+          </div>
+          <div class="material-table-body">
+            <div v-for="(material, index) in data.materials" :key="index" class="material-row">
+              <div>{{ material.designation }}</div>
+              <div>{{ material.quantity }}</div>
+              <div>{{ material.price.toFixed(2) }} €</div>
+              <div>{{ (material.quantity * material.price).toFixed(2) }} €</div>
+              <div>
+                <button class="btn btn-danger btn-small" @click="removeMaterial(index)">Supprimer</button>
+              </div>
+            </div>
+          </div>
+          <div class="material-table-footer">
+            <div/>
+            <div/>
+            <div><strong>Total:</strong></div>
+            <div><strong>{{ materialTotal.toFixed(2) }} €</strong></div>
+            <div/>
+          </div>
+        </div>
+      </section>
+
+      <!-- Liste de Références -->
+      <section class="card references-section">
+        <h2>📚 Liste de Références</h2>
+        <div class="reference-controls">
+          <div class="reference-input-group">
+            <input v-model="newReference.document" type="text" class="form-control" placeholder="Document" @keypress.enter="addReference">
+            <input v-model="newReference.page" type="text" class="form-control" placeholder="Page">
+            <select v-model="newReference.type" class="form-control">
+              <option value="">Sélectionner le type...</option>
+              <option value="Instructions, notes, guides">Instructions, notes, guides</option>
+              <option value="Dossier technique">Dossier technique</option>
+              <option value="Règlement intérieur">Règlement intérieur</option>
+              <option value="Normes nationales">Normes nationales</option>
+              <option value="Normes internationales">Normes internationales</option>
+            </select>
+            <button class="btn btn-primary" @click="addReference">Ajouter</button>
+          </div>
+          <button class="btn btn-secondary" @click="sortReferences">🔤 Trier A-Z</button>
+        </div>
+        <div class="reference-table">
+          <div class="reference-table-header">
+            <div>Document</div>
+            <div>Page</div>
+            <div>Type</div>
+            <div>Actions</div>
+          </div>
+          <div class="reference-table-body">
+            <div v-for="(reference, index) in data.references" :key="index" class="reference-row">
+              <div>{{ reference.document }}</div>
+              <div>{{ reference.page || '-' }}</div>
+              <div>{{ reference.type }}</div>
+              <div>
+                <button class="btn btn-danger btn-small" @click="removeReference(index)">Supprimer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Instructions de consignation -->
+      <section class="card instructions-section">
+        <h2>📖 Instructions de consignation</h2>
+        <div class="instructions-controls">
+          <button class="btn btn-primary" @click="addStep">➕ Ajouter une étape</button>
+        </div>
+        <div class="instructions-table">
+          <div class="table-header">
+            <div class="col-repere">Repère</div>
+            <div class="col-instruction">Instruction</div>
+            <div class="col-photo">Photo</div>
+          </div>
+          <div class="table-body">
+            <div v-for="(step, index) in data.steps" :key="step.id" class="step-row">
+              <div class="col-repere">
+                <input v-model="step.repere" type="text" :placeholder="`Repère ${index + 1}`">
+              </div>
+              <div class="col-instruction">
+                <textarea v-model="step.instruction" placeholder="Description de l'instruction..."/>
+              </div>
+              <div class="col-photo">
+                <div class="photo-upload">
+                  <img v-if="step.photo && step.photo.startsWith('data:image/')" :src="step.photo" class="photo-preview" alt="Photo">
+                  <label class="photo-label">
+                    📷 {{ step.photo && step.photo.startsWith('data:image/') ? 'Changer' : 'Ajouter' }} photo
+                    <input type="file" accept="image/*" style="display: none;" @change="handlePhotoUpload($event, step.id)">
+                  </label>
+                </div>
+              </div>
+              <div class="step-actions">
+                <div class="step-reorder-buttons">
+                  <button class="btn btn-secondary btn-small btn-reorder" :disabled="index === 0" @click="moveStep(index, -1)">⬆️</button>
+                  <button class="btn btn-secondary btn-small btn-reorder" :disabled="index === data.steps.length - 1" @click="moveStep(index, 1)">⬇️</button>
+                </div>
+                <button class="btn btn-danger btn-small" @click="removeStep(step.id)">🗑️ Supprimer l'étape</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pistes d'amélioration -->
+      <section class="card improvement-section">
+        <h2>💡 Pistes d'amélioration</h2>
+        <div class="improvement-input-group">
+          <input v-model="newImprovement" type="text" class="form-control" placeholder="Ajouter une suggestion..." @keypress.enter="addImprovement">
+          <button class="btn btn-primary" @click="addImprovement">Ajouter</button>
+        </div>
+        <ul class="improvement-list">
+          <li v-for="(improvement, index) in data.improvements" :key="index">
+            <span>{{ improvement }}</span>
+            <button class="btn btn-danger btn-small" @click="removeImprovement(index)">Supprimer</button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button class="btn btn-success" @click="saveToFile">💾 Enregistrer</button>
+        <button class="btn btn-info" @click="loadFromFile">📂 Charger</button>
+        <button class="btn btn-secondary" @click="printPage">🖨️ Imprimer</button>
+        <button class="btn btn-danger" @click="clearAll">🗑️ Effacer tout</button>
+      </div>
+
+      <footer>
+        <p>Document de sécurité - Procédure de consignation</p>
+      </footer>
+    </div>
+
+    <!-- Notification -->
+    <div v-if="notification" :class="['notification', notification.type]" :style="{ animation: 'slideIn 0.3s ease-out' }">
+      {{ notification.message }}
+    </div>
+
+    <!-- Hidden file input for loading -->
+    <input ref="fileInput" type="file" accept=".json" style="display: none;" @change="handleFileLoad">
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { marked } from 'marked'
+
+// Configure marked for security
+if (typeof marked !== 'undefined') {
+  marked.setOptions({
+    breaks: true,
+    gfm: true
+  })
+  marked.use({
+    useNewRenderer: true,
+    renderer: {
+      html() {
+        return ''
+      }
+    }
+  })
+}
+
+// Reactive data
+const data = reactive({
+  info: {
+    titre: '',
+    description: '',
+    date: '',
+    numero: '',
+    personnel: '',
+    localisation: ''
+  },
+  warnings: {
+    dangers: [],
+    analyseRisques: ''
+  },
+  materials: [],
+  epiEpc: [],
+  references: [],
+  steps: [],
+  improvements: []
+})
+
+// Input helpers
+const epiEpcQuery = ref('')
+const showEpiEpcSuggestions = ref(false)
+const dangerQuery = ref('')
+const showDangerSuggestions = ref(false)
+const newMaterial = reactive({ designation: '', quantity: 1, price: 0 })
+const newReference = reactive({ document: '', page: '', type: '' })
+const newImprovement = ref('')
+const notification = ref(null)
+const fileInput = ref(null)
+
+// Step counter for unique IDs
+let stepCounter = 0
+
+// EPI/EPC Suggestions
+const epiEpcSuggestions = {
+  'EPI': {
+    'électrique': [
+      'Casque isolant', 'Lunettes isolantes', 'Gants isolants',
+      'Écran facial isolant', 'Vêtements isolants', 'Chaussures isolantes'
+    ],
+    'mécanique': [
+      'Casque de chantier', 'Lunettes de protection', 'Gants anti-coupure',
+      'Protections auditives', 'Masque respiratoire', 'Harnais de sécurité'
+    ],
+    'commun': [
+      'Chaussures de sécurité', 'Gilet haute visibilité',
+      'Vêtements de travail', 'Gants de manutention'
+    ]
+  },
+  'EPC': {
+    'électrique': [
+      'Appareil de test VAT', 'Tapis isolant', 'Nappe isolante',
+      'Cadenas de consignation électrique', 'Dispositif de mise à la terre', 'Pancarte de consignation'
+    ],
+    'mécanique': [
+      'Protecteur de machine', 'Garde-corps', 'Filet de sécurité',
+      'Barrières de protection', 'Barre de consignation'
+    ],
+    'commun': [
+      'Serrure de consignation', 'Barrières de sécurité', 'Signalisation de sécurité',
+      'Extincteur', 'Trousse de premiers secours', 'Éclairage de sécurité'
+    ]
+  }
+}
+
+// Danger Suggestions
+const dangerSuggestions = [
+  { name: 'Tension électrique', color: 'tension-electrique', requiresValue: true, unit: 'V' },
+  { name: 'Air comprimé', color: 'air-comprime', requiresValue: true, unit: 'bar' },
+  { name: 'Pression hydraulique', color: 'pression-hydraulique', requiresValue: true, unit: 'bar' },
+  { name: 'Instabilité mécanique', color: 'instabilite-mecanique', requiresValue: false },
+  { name: 'Travail en hauteur', color: 'hauteur', requiresValue: true, unit: 'm' },
+  { name: 'Risque d\'électrocution', color: 'tension-electrique', requiresValue: false },
+  { name: 'Risque de chute', color: 'hauteur', requiresValue: false },
+  { name: 'Projection de particules', color: 'instabilite-mecanique', requiresValue: false },
+  { name: 'Écrasement', color: 'instabilite-mecanique', requiresValue: false },
+  { name: 'Coupure', color: 'instabilite-mecanique', requiresValue: false },
+  { name: 'Température élevée', color: 'autre', requiresValue: true, unit: '°C' },
+  { name: 'Produit chimique', color: 'autre', requiresValue: false },
+  { name: 'Rayonnement', color: 'autre', requiresValue: false },
+  { name: 'Bruit excessif', color: 'autre', requiresValue: true, unit: 'dB' },
+  { name: 'Espace confiné', color: 'autre', requiresValue: false },
+  { name: 'Atmosphère explosive', color: 'autre', requiresValue: false },
+  { name: 'Froid / Gel', color: 'autre', requiresValue: true, unit: '°C' },
+  { name: 'Charge suspendue', color: 'instabilite-mecanique', requiresValue: false },
+  { name: 'Chariot élévateur', color: 'instabilite-mecanique', requiresValue: false },
+  { name: 'Laser', color: 'autre', requiresValue: false },
+  { name: 'Produit corrosif', color: 'autre', requiresValue: false },
+  { name: 'Produit explosif', color: 'autre', requiresValue: false },
+  { name: 'Produit inflammable', color: 'autre', requiresValue: false },
+  { name: 'Produit toxique', color: 'autre', requiresValue: false },
+  { name: 'Risque biologique', color: 'autre', requiresValue: false },
+  { name: 'Radioactivité', color: 'autre', requiresValue: false },
+  { name: 'Champ magnétique', color: 'autre', requiresValue: false },
+  { name: 'Trébuchement', color: 'hauteur', requiresValue: false }
+]
+
+// Computed properties
+const epiEpcMatches = computed(() => {
+  const query = epiEpcQuery.value.toLowerCase().trim()
+  if (query.length < 2)
+    return []
+
+  const matches = []
+  Object.entries(epiEpcSuggestions).forEach(([type, categories]) => {
+    Object.entries(categories).forEach(([category, items]) => {
+      items.forEach((item) => {
+        if (item.toLowerCase().includes(query)) {
+          matches.push({ type, category, name: item })
+        }
+      })
+    })
+  })
+  return matches
+})
+
+const groupedEpiEpcMatches = computed(() => {
+  const grouped = {}
+  epiEpcMatches.value.forEach((match) => {
+    const key = `${match.type}-${match.category}`
+    if (!grouped[key]) {
+      grouped[key] = { type: match.type, category: match.category, items: [] }
+    }
+    grouped[key].items.push(match.name)
+  })
+  return grouped
+})
+
+const dangerMatches = computed(() => {
+  const query = dangerQuery.value.toLowerCase().trim()
+  if (query.length < 2)
+    return []
+  return dangerSuggestions.filter(d => d.name.toLowerCase().includes(query))
+})
+
+const materialTotal = computed(() => {
+  return data.materials.reduce((sum, m) => sum + (m.quantity * m.price), 0)
+})
+
+const analyseRisquesPreview = computed(() => {
+  if (!data.warnings.analyseRisques.trim())
+    return ''
+  try {
+    return marked.parse(data.warnings.analyseRisques)
+  }
+  catch {
+    return data.warnings.analyseRisques
+  }
+})
+
+// Watch for changes to persist to localStorage
+watch(data, () => {
+  saveToStorage()
+}, { deep: true })
+
+// Methods
+const handleEpiEpcInput = () => {
+  showEpiEpcSuggestions.value = epiEpcMatches.value.length > 0
+}
+
+const hideSuggestions = () => {
+  showEpiEpcSuggestions.value = false
+}
+
+const addEpiEpc = (name, type, category) => {
+  if (data.epiEpc.some(item => item.name === name)) {
+    showNotification('⚠️ Cet équipement est déjà dans la liste', 'info')
+    return
+  }
+  data.epiEpc.push({ name, type, category })
+  epiEpcQuery.value = ''
+  hideSuggestions()
+}
+
+const addCustomEpiEpc = () => {
+  const customValue = epiEpcQuery.value.trim()
+  if (customValue) {
+    addEpiEpc(customValue, 'Personnalisé', 'personnalisé')
+  }
+}
+
+const removeEpiEpc = (index) => {
+  data.epiEpc.splice(index, 1)
+}
+
+const handleDangerInput = () => {
+  showDangerSuggestions.value = dangerMatches.value.length > 0
+}
+
+const hideDangerSuggestions = () => {
+  showDangerSuggestions.value = false
+}
+
+const selectDanger = (danger) => {
+  if (danger.requiresValue) {
+    const value = prompt(`Valeur pour "${danger.name}" (${danger.unit}):`)
+    addDanger(danger.name, danger.color, value ? `${value} ${danger.unit}` : null)
+  }
+  else {
+    addDanger(danger.name, danger.color, null)
+  }
+  dangerQuery.value = ''
+  hideDangerSuggestions()
+}
+
+const addDanger = (name, color, value) => {
+  if (data.warnings.dangers.some(d => d.name === name && d.value === value)) {
+    showNotification('⚠️ Ce danger est déjà dans la liste', 'info')
+    return
+  }
+  data.warnings.dangers.push({ name, color, value })
+}
+
+const addCustomDanger = () => {
+  const customValue = dangerQuery.value.trim()
+  if (customValue) {
+    addDanger(customValue, 'autre', null)
+    dangerQuery.value = ''
+    hideDangerSuggestions()
+  }
+}
+
+const removeDanger = (index) => {
+  data.warnings.dangers.splice(index, 1)
+}
+
+const addMaterial = () => {
+  if (!newMaterial.designation.trim()) {
+    showNotification('⚠️ Veuillez entrer une désignation', 'error')
+    return
+  }
+  data.materials.push({
+    designation: newMaterial.designation,
+    quantity: newMaterial.quantity || 1,
+    price: newMaterial.price || 0
+  })
+  newMaterial.designation = ''
+  newMaterial.quantity = 1
+  newMaterial.price = 0
+}
+
+const removeMaterial = (index) => {
+  data.materials.splice(index, 1)
+}
+
+const addReference = () => {
+  if (!newReference.document.trim()) {
+    showNotification('⚠️ Veuillez entrer un nom de document', 'error')
+    return
+  }
+  if (!newReference.type) {
+    showNotification('⚠️ Veuillez sélectionner un type', 'error')
+    return
+  }
+  data.references.push({
+    document: newReference.document,
+    page: newReference.page,
+    type: newReference.type
+  })
+  newReference.document = ''
+  newReference.page = ''
+  newReference.type = ''
+}
+
+const removeReference = (index) => {
+  data.references.splice(index, 1)
+}
+
+const sortReferences = () => {
+  data.references.sort((a, b) => a.document.localeCompare(b.document, 'fr', { sensitivity: 'base' }))
+  showNotification('✅ Références triées par ordre alphabétique', 'success')
+}
+
+const addStep = () => {
+  const id = crypto.randomUUID ? crypto.randomUUID() : `step-${Date.now()}-${++stepCounter}`
+  data.steps.push({ id, repere: '', instruction: '', photo: '' })
+}
+
+const removeStep = (id) => {
+  const index = data.steps.findIndex(s => s.id === id)
+  if (index > -1) {
+    data.steps.splice(index, 1)
+  }
+}
+
+const moveStep = (index, direction) => {
+  const newIndex = index + direction
+  if (newIndex < 0 || newIndex >= data.steps.length)
+    return
+  const temp = data.steps[index]
+  data.steps[index] = data.steps[newIndex]
+  data.steps[newIndex] = temp
+}
+
+const handlePhotoUpload = (event, stepId) => {
+  const file = event.target.files?.[0]
+  if (!file || !file.type.startsWith('image/'))
+    return
+
+  const maxSize = 2 * 1024 * 1024 // 2MB
+  if (file.size > maxSize) {
+    showNotification('❌ La photo est trop grande. Taille maximale: 2MB', 'error')
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const step = data.steps.find(s => s.id === stepId)
+    if (step) {
+      step.photo = e.target.result
+    }
+  }
+  reader.readAsDataURL(file)
+}
+
+const addImprovement = () => {
+  if (newImprovement.value.trim()) {
+    data.improvements.push(newImprovement.value.trim())
+    newImprovement.value = ''
+  }
+}
+
+const removeImprovement = (index) => {
+  data.improvements.splice(index, 1)
+}
+
+const saveToStorage = () => {
+  try {
+    localStorage.setItem('consignmentProcedure', JSON.stringify(data))
+  }
+  catch (e) {
+    console.error('Error saving to storage:', e)
+  }
+}
+
+const loadFromStorage = () => {
+  try {
+    const saved = localStorage.getItem('consignmentProcedure')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      Object.assign(data.info, parsed.info || {})
+      data.warnings.dangers = parsed.warnings?.dangers || []
+      data.warnings.analyseRisques = parsed.warnings?.analyseRisques || ''
+      data.materials = parsed.materials || []
+      data.epiEpc = parsed.epiEpc || []
+      data.references = parsed.references || []
+      data.steps = parsed.steps || []
+      data.improvements = parsed.improvements || []
+    }
+  }
+  catch (e) {
+    console.error('Error loading from storage:', e)
+  }
+}
+
+const saveToFile = () => {
+  const dataStr = JSON.stringify(data, null, 2)
+  const blob = new Blob([dataStr], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  const sanitizedNumero = (data.info.numero || 'procedure').replace(/[^a-z0-9_]/gi, '_')
+  link.download = `consignation-${sanitizedNumero}-${new Date().toISOString().split('T')[0]}.json`
+  link.click()
+  URL.revokeObjectURL(url)
+  showNotification('✅ Procédure enregistrée avec succès!', 'success')
+}
+
+const loadFromFile = () => {
+  fileInput.value?.click()
+}
+
+const handleFileLoad = (event) => {
+  const file = event.target.files?.[0]
+  if (!file)
+    return
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result)
+      Object.assign(data.info, parsed.info || {})
+      data.warnings.dangers = parsed.warnings?.dangers || []
+      data.warnings.analyseRisques = parsed.warnings?.analyseRisques || ''
+      data.materials = parsed.materials || []
+      data.epiEpc = parsed.epiEpc || []
+      data.references = parsed.references || []
+      data.steps = parsed.steps || []
+      data.improvements = parsed.improvements || []
+      showNotification('✅ Procédure chargée avec succès!', 'success')
+    }
+    catch {
+      showNotification('❌ Erreur lors du chargement du fichier', 'error')
+    }
+  }
+  reader.readAsText(file)
+}
+
+const printPage = () => {
+  window.print()
+}
+
+const clearAll = () => {
+  if (confirm('⚠️ Êtes-vous sûr de vouloir effacer toutes les données? Cette action est irréversible.')) {
+    Object.assign(data.info, { titre: '', description: '', date: '', numero: '', personnel: '', localisation: '' })
+    data.warnings.dangers = []
+    data.warnings.analyseRisques = ''
+    data.materials = []
+    data.epiEpc = []
+    data.references = []
+    data.steps = []
+    data.improvements = []
+    showNotification('🗑️ Toutes les données ont été effacées', 'info')
+  }
+}
+
+const showNotification = (message, type = 'info') => {
+  notification.value = { message, type }
+  setTimeout(() => {
+    notification.value = null
+  }, 3000)
+}
+
+// Click outside handler for suggestions
+const handleClickOutside = (e) => {
+  if (!e.target.closest('.epi-epc-input-container')) {
+    hideSuggestions()
+  }
+  if (!e.target.closest('.danger-input-container')) {
+    hideDangerSuggestions()
+  }
+}
+
+onMounted(() => {
+  loadFromStorage()
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
+
+<style scoped>
+.consignment-page {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #f0f9ff;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 30px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border-radius: 15px;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.subtitle {
+  font-size: 1.2em;
+  opacity: 0.95;
+}
+
+.back-btn {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 5px;
+  text-decoration: none;
+  margin-bottom: 15px;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Cards */
+.card {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-left: 5px solid #2563eb;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card h2 {
+  color: #2563eb;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+  border-bottom: 2px solid #e0f2fe;
+  padding-bottom: 10px;
+}
+
+/* Section-specific colors */
+.info-section {
+  border-left-color: #06b6d4;
+}
+
+.info-section h2 {
+  color: #06b6d4;
+}
+
+.warning-section {
+  border-left-color: #ef4444;
+  background: linear-gradient(to right, #fff5f5, #ffffff);
+}
+
+.warning-section h2 {
+  color: #ef4444;
+}
+
+.material-section {
+  border-left-color: #10b981;
+}
+
+.material-section h2 {
+  color: #10b981;
+}
+
+.references-section,
+.instructions-section {
+  border-left-color: #7c3aed;
+}
+
+.references-section h2,
+.instructions-section h2 {
+  color: #7c3aed;
+}
+
+.improvement-section {
+  border-left-color: #f59e0b;
+}
+
+.improvement-section h2 {
+  color: #f59e0b;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1e293b;
+}
+
+/* EPI/EPC */
+.epi-epc-input-container {
+  position: relative;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e0f2fe;
+  border-radius: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin-top: 5px;
+}
+
+.suggestion-category {
+  padding: 10px 15px;
+  background: #e0f2fe;
+  font-weight: 600;
+  color: #2563eb;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.suggestion-item {
+  padding: 12px 15px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+  background: #e0f2fe;
+}
+
+.suggestion-badges {
+  display: flex;
+  gap: 5px;
+}
+
+.badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: white;
+}
+
+.badge-epi {
+  background: #64748b;
+}
+
+.badge-epc {
+  background: #475569;
+}
+
+.badge-personnalisé {
+  background: #6366f1;
+}
+
+.badge-électrique,
+.badge-electrique {
+  background: #eab308;
+}
+
+.badge-mécanique,
+.badge-mecanique {
+  background: #92400e;
+}
+
+.badge-commun {
+  background: #dc2626;
+}
+
+.epi-epc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+  min-height: 40px;
+}
+
+.epi-epc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid #e0f2fe;
+  border-radius: 8px;
+  font-size: 0.9em;
+}
+
+.tag-name {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.tag-remove {
+  cursor: pointer;
+  color: #ef4444;
+  font-weight: bold;
+  padding: 0 5px;
+  transition: transform 0.2s;
+}
+
+.tag-remove:hover {
+  transform: scale(1.2);
+}
+
+/* Danger styles */
+.warning-content {
+  display: grid;
+  gap: 20px;
+}
+
+.danger-box,
+.risk-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid #f59e0b;
+}
+
+.danger-box {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.danger-box h3 {
+  color: #ef4444;
+  margin-bottom: 10px;
+}
+
+.risk-box {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.risk-box h3 {
+  color: #f59e0b;
+  margin-bottom: 10px;
+}
+
+.danger-input-container {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.danger-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+  min-height: 40px;
+}
+
+.danger-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  background: white;
+  border: 2px solid #e5e7eb;
+}
+
+.danger-tag-name {
+  font-weight: 500;
+}
+
+.danger-tag-value {
+  font-weight: bold;
+  color: #ef4444;
+}
+
+.danger-tag-remove {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1.1em;
+  padding: 0 4px;
+}
+
+.danger-tag.tension-electrique {
+  border-color: #eab308;
+  background: #fef9c3;
+}
+
+.danger-tag.air-comprime {
+  border-color: #06b6d4;
+  background: #cffafe;
+}
+
+.danger-tag.pression-hydraulique {
+  border-color: #8b5cf6;
+  background: #ede9fe;
+}
+
+.danger-tag.instabilite-mecanique {
+  border-color: #f97316;
+  background: #ffedd5;
+}
+
+.danger-tag.hauteur {
+  border-color: #ef4444;
+  background: #fee2e2;
+}
+
+.danger-tag.autre {
+  border-color: #64748b;
+  background: #f1f5f9;
+}
+
+/* Markdown preview */
+.markdown-support {
+  font-family: 'Courier New', monospace;
+}
+
+.markdown-preview {
+  margin-top: 10px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.markdown-preview :deep(ul) {
+  margin-left: 20px;
+  list-style-type: disc;
+}
+
+.markdown-preview :deep(ol) {
+  margin-left: 20px;
+}
+
+.markdown-preview :deep(strong) {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.markdown-preview :deep(li) {
+  margin: 5px 0;
+}
+
+/* Material table */
+.material-input-group {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr auto;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.material-table {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #e0f2fe;
+}
+
+.material-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1.5fr 120px;
+  gap: 15px;
+  background: #10b981;
+  color: white;
+  font-weight: 600;
+  padding: 15px;
+}
+
+.material-table-body {
+  min-height: 50px;
+}
+
+.material-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1.5fr 120px;
+  gap: 15px;
+  padding: 15px;
+  border-bottom: 1px solid #e0f2fe;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.material-row:hover {
+  background: #e0f2fe;
+}
+
+.material-table-footer {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1.5fr 120px;
+  gap: 15px;
+  padding: 15px;
+  background: #f0fdf4;
+  border-top: 2px solid #10b981;
+}
+
+/* Reference table */
+.reference-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.reference-input-group {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr auto;
+  gap: 10px;
+}
+
+.reference-table {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #e0f2fe;
+}
+
+.reference-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 120px;
+  gap: 15px;
+  background: #7c3aed;
+  color: white;
+  font-weight: 600;
+  padding: 15px;
+}
+
+.reference-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 120px;
+  gap: 15px;
+  padding: 15px;
+  border-bottom: 1px solid #e0f2fe;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.reference-row:hover {
+  background: #e0f2fe;
+}
+
+/* Instructions table */
+.instructions-controls {
+  margin-bottom: 20px;
+}
+
+.instructions-table {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #e0f2fe;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 150px 1fr 200px;
+  gap: 2px;
+  background: #7c3aed;
+  color: white;
+  font-weight: 600;
+  padding: 15px;
+}
+
+.table-body {
+  display: grid;
+  gap: 10px;
+  padding: 15px;
+}
+
+.step-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 200px;
+  gap: 15px;
+  padding: 15px;
+  background: #e0f2fe;
+  border-radius: 8px;
+  align-items: start;
+  transition: background-color 0.2s;
+}
+
+.step-row:hover {
+  background: #e0e7ff;
+}
+
+.step-row input[type="text"],
+.step-row textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95em;
+}
+
+.step-row textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.photo-preview {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #e0f2fe;
+}
+
+.photo-label {
+  display: inline-block;
+  padding: 8px 12px;
+  background: #2563eb;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.photo-label:hover {
+  background: #7c3aed;
+}
+
+.step-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.step-reorder-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-reorder {
+  padding: 6px 10px;
+  font-size: 0.85em;
+  min-width: auto;
+}
+
+/* Improvement list */
+.improvement-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.improvement-input-group .form-control {
+  flex: 1;
+}
+
+.improvement-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.improvement-list li {
+  background: #e0f2fe;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.improvement-list li:hover {
+  background: #bae6fd;
+}
+
+.improvement-list li::before {
+  content: "💡";
+  margin-right: 10px;
+  font-size: 1.2em;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 30px;
+  padding: 20px;
+  color: #64748b;
+  font-size: 0.9em;
+}
+
+/* Notification */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  font-weight: 600;
+  color: white;
+}
+
+.notification.success {
+  background: #10b981;
+}
+
+.notification.error {
+  background: #ef4444;
+}
+
+.notification.info {
+  background: #06b6d4;
+}
+
+/* Print styles */
+@media print {
+  .consignment-page {
+    background: white;
+    padding: 0;
+  }
+
+  .container {
+    box-shadow: none;
+    padding: 20px;
+  }
+
+  .actions,
+  .instructions-controls,
+  .material-input-group,
+  .improvement-input-group,
+  .back-btn,
+  .reference-controls {
+    display: none !important;
+  }
+
+  .card {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  header h1 {
+    font-size: 2em;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header,
+  .step-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .step-actions {
+    grid-column: 1;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .material-input-group,
+  .reference-input-group {
+    grid-template-columns: 1fr;
+  }
+
+  .material-table-header,
+  .material-row,
+  .material-table-footer,
+  .reference-table-header,
+  .reference-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}
+</style>
