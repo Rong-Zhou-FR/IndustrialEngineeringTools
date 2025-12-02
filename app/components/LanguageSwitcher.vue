@@ -12,13 +12,22 @@
 </template>
 
 <script setup>
-const { locale, locales } = useI18n()
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
+
+const availableLocales = [
+  { code: 'en', name: 'English' },
+  { code: 'fr', name: 'Français' }
+]
 
 const currentLocale = computed(() => locale.value)
-const availableLocales = computed(() => locales.value)
 
 const switchLanguage = (code) => {
   locale.value = code
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('locale', code)
+  }
 }
 </script>
 

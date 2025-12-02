@@ -287,6 +287,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { marked } from 'marked'
+import { useI18n } from 'vue-i18n'
 
 const { t: translate } = useI18n()
 
