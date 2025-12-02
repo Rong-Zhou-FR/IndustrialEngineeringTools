@@ -1,9 +1,10 @@
 <template>
   <div class="container">
     <div class="card text-center fade-in">
-      <h1>🏭 Industrial Engineering Tools</h1>
-      <p class="author">by Rong ZHOU</p>
-      <p class="description">A comprehensive tool for industrial engineering calculations</p>
+      <LanguageSwitcher />
+      <h1>🏭 {{ t('home.title') }}</h1>
+      <p class="author">{{ t('home.author') }}</p>
+      <p class="description">{{ t('home.description') }}</p>
 
       <div class="datetime">
         <p>{{ currentDate }}</p>
@@ -12,10 +13,10 @@
 
       <nav class="nav-buttons">
         <NuxtLink to="/reliability-calculator" class="btn">
-          🔧 Reliability Calculator
+          {{ t('home.reliabilityCalculator') }}
         </NuxtLink>
         <NuxtLink to="/consignment" class="btn">
-          📋 Procédure de Consignation
+          {{ t('home.consignmentProcedure') }}
         </NuxtLink>
       </nav>
     </div>
@@ -25,17 +26,26 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
+const { t, locale } = useI18n()
+
 const currentDate = ref('')
 const currentTime = ref('')
 let timeInterval = null
 
 const updateDateTime = () => {
   const now = new Date()
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const currentLocale = locale.value
+  
+  const days = currentLocale === 'fr' 
+    ? [t('home.days.sunday'), t('home.days.monday'), t('home.days.tuesday'), t('home.days.wednesday'), t('home.days.thursday'), t('home.days.friday'), t('home.days.saturday')]
+    : [t('home.days.sunday'), t('home.days.monday'), t('home.days.tuesday'), t('home.days.wednesday'), t('home.days.thursday'), t('home.days.friday'), t('home.days.saturday')]
+  
+  const months = currentLocale === 'fr'
+    ? [t('home.months.january'), t('home.months.february'), t('home.months.march'), t('home.months.april'), t('home.months.may'), t('home.months.june'), t('home.months.july'), t('home.months.august'), t('home.months.september'), t('home.months.october'), t('home.months.november'), t('home.months.december')]
+    : [t('home.months.january'), t('home.months.february'), t('home.months.march'), t('home.months.april'), t('home.months.may'), t('home.months.june'), t('home.months.july'), t('home.months.august'), t('home.months.september'), t('home.months.october'), t('home.months.november'), t('home.months.december')]
 
   currentDate.value = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`
-  currentTime.value = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  currentTime.value = now.toLocaleTimeString(currentLocale === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
 onMounted(() => {

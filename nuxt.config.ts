@@ -19,5 +19,20 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  modules: ['@nuxt/eslint']
+  modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
+
+  i18n: {
+    locales: [
+      { code: 'en', iso: 'en-US', name: 'English' },
+      { code: 'fr', iso: 'fr-FR', name: 'Français' }
+    ],
+    defaultLocale: 'en',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root'
+    },
+    vueI18n: './i18n.config.ts'
+  }
 })
