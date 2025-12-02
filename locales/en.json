@@ -72,6 +72,17 @@
     "print": "🖨️ Print",
     "clearAll": "🗑️ Clear All",
     "footer": "Safety document - Consignment procedure",
+    "pdf": {
+      "title": "Consignment Procedure",
+      "subtitle": "Safety documentation for intervention",
+      "interventionInfo": "Intervention Information",
+      "warnings": "Warnings",
+      "identifiedDangers": "Identified Dangers:",
+      "requiredMaterial": "Required Material",
+      "references": "List of References",
+      "instructions": "Consignment Instructions",
+      "step": "Step"
+    },
     "fields": {
       "title": "Title:",
       "titlePlaceholder": "Intervention title",

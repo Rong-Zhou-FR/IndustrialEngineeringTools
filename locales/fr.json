@@ -72,6 +72,17 @@
     "print": "🖨️ Imprimer",
     "clearAll": "🗑️ Effacer tout",
     "footer": "Document de sécurité - Procédure de consignation",
+    "pdf": {
+      "title": "Procédure de Consignation",
+      "subtitle": "Documentation de sécurité pour intervention",
+      "interventionInfo": "Informations sur l'intervention",
+      "warnings": "Avertissements",
+      "identifiedDangers": "Dangers identifiés:",
+      "requiredMaterial": "Matériel nécessaire",
+      "references": "Liste de Références",
+      "instructions": "Instructions de consignation",
+      "step": "Étape"
+    },
     "fields": {
       "title": "Titre :",
       "titlePlaceholder": "Titre de l'intervention",

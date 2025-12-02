@@ -881,19 +881,19 @@ const printPage = async () => {
     doc.setFontSize(18)
     doc.setFont('times', 'bold')
     doc.setTextColor(0, 0, 0)
-    doc.text('Procédure de Consignation', pageWidth / 2, y, { align: 'center' })
+    doc.text(translate('consignment.pdf.title'), pageWidth / 2, y, { align: 'center' })
     y += 10
 
     doc.setFontSize(10)
     doc.setFont('times', 'italic')
-    doc.text('Documentation de sécurité pour intervention', pageWidth / 2, y, { align: 'center' })
+    doc.text(translate('consignment.pdf.subtitle'), pageWidth / 2, y, { align: 'center' })
     y += 15
 
     // Section: Informations sur l'intervention
     doc.setFontSize(12)
     doc.setFont('times', 'bold')
     doc.setTextColor(0, 51, 102) // Dark blue
-    doc.text('Informations sur l\'intervention', margin, y)
+    doc.text(translate('consignment.pdf.interventionInfo'), margin, y)
     y += 8
 
     doc.setFontSize(10)
@@ -977,7 +977,7 @@ const printPage = async () => {
     doc.setFontSize(12)
     doc.setFont('times', 'bold')
     doc.setTextColor(153, 0, 0) // Dark red
-    doc.text('Avertissements', margin, y)
+    doc.text(translate('consignment.pdf.warnings'), margin, y)
     y += 8
 
     doc.setFontSize(10)
@@ -986,7 +986,7 @@ const printPage = async () => {
     // Render dangers
     if (data.warnings.dangers && data.warnings.dangers.length > 0) {
       doc.setFont('times', 'bold')
-      doc.text('Dangers identifiés:', margin, y)
+      doc.text(translate('consignment.pdf.identifiedDangers'), margin, y)
       y += 6
       doc.setFont('times', 'normal')
 
@@ -1094,7 +1094,7 @@ const printPage = async () => {
       doc.setFontSize(12)
       doc.setFont('times', 'bold')
       doc.setTextColor(0, 102, 51) // Dark green
-      doc.text('Matériel nécessaire', margin, y)
+      doc.text(translate('consignment.pdf.requiredMaterial'), margin, y)
       y += 8
 
       doc.setFontSize(9)
@@ -1126,7 +1126,7 @@ const printPage = async () => {
       doc.setFontSize(12)
       doc.setFont('times', 'bold')
       doc.setTextColor(102, 51, 153) // Purple
-      doc.text('Liste de Références', margin, y)
+      doc.text(translate('consignment.pdf.references'), margin, y)
       y += 8
 
       doc.setFontSize(9)
@@ -1157,7 +1157,7 @@ const printPage = async () => {
       doc.setFontSize(12)
       doc.setFont('times', 'bold')
       doc.setTextColor(102, 51, 153) // Purple
-      doc.text('Instructions de consignation', margin, y)
+      doc.text(translate('consignment.pdf.instructions'), margin, y)
       y += 8
 
       doc.setFontSize(9)
@@ -1165,7 +1165,7 @@ const printPage = async () => {
 
       data.steps.forEach((step, index) => {
         doc.setFont('times', 'bold')
-        doc.text(`${index + 1}. ${step.repere || `Étape ${index + 1}`}`, margin, y)
+        doc.text(`${index + 1}. ${step.repere || `${translate('consignment.pdf.step')} ${index + 1}`}`, margin, y)
         y += 6
 
         if (step.instruction) {
