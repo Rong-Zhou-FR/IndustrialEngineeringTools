@@ -13,37 +13,37 @@
         <h2>{{ translate('consignment.interventionInfo') }}</h2>
         <div class="form-grid">
           <div class="form-group full-width">
-            <label for="titre">Titre :</label>
-            <input id="titre" v-model="data.info.titre" type="text" class="form-control" placeholder="Titre de l'intervention">
+            <label for="titre">{{ translate('consignment.fields.title') }}</label>
+            <input id="titre" v-model="data.info.titre" type="text" class="form-control" :placeholder="translate('consignment.fields.titlePlaceholder')">
           </div>
           <div class="form-group full-width">
-            <label for="description">Description :</label>
-            <textarea id="description" v-model="data.info.description" class="form-control" rows="3" placeholder="Description détaillée de l'intervention"/>
+            <label for="description">{{ translate('consignment.fields.description') }}</label>
+            <textarea id="description" v-model="data.info.description" class="form-control" rows="3" :placeholder="translate('consignment.fields.descriptionPlaceholder')"/>
           </div>
           <div class="form-group">
-            <label for="date">Date :</label>
+            <label for="date">{{ translate('consignment.fields.date') }}</label>
             <input id="date" v-model="data.info.date" type="date" class="form-control">
           </div>
           <div class="form-group">
-            <label for="numero">Numéro :</label>
-            <input id="numero" v-model="data.info.numero" type="text" class="form-control" placeholder="N° d'intervention">
+            <label for="numero">{{ translate('consignment.fields.number') }}</label>
+            <input id="numero" v-model="data.info.numero" type="text" class="form-control" :placeholder="translate('consignment.fields.numberPlaceholder')">
           </div>
           <div class="form-group">
-            <label for="personnel">Personnel :</label>
-            <input id="personnel" v-model="data.info.personnel" type="text" class="form-control" placeholder="Nom du personnel">
+            <label for="personnel">{{ translate('consignment.fields.personnel') }}</label>
+            <input id="personnel" v-model="data.info.personnel" type="text" class="form-control" :placeholder="translate('consignment.fields.personnelPlaceholder')">
           </div>
           <div class="form-group">
-            <label for="localisation">Localisation :</label>
-            <input id="localisation" v-model="data.info.localisation" type="text" class="form-control" placeholder="Lieu d'intervention">
+            <label for="localisation">{{ translate('consignment.fields.location') }}</label>
+            <input id="localisation" v-model="data.info.localisation" type="text" class="form-control" :placeholder="translate('consignment.fields.locationPlaceholder')">
           </div>
           <div class="form-group full-width">
-            <label>EPI/EPC requis :</label>
+            <label>{{ translate('consignment.fields.epiEpc') }}</label>
             <div class="epi-epc-input-container">
               <input
                 v-model="epiEpcQuery"
                 type="text"
                 class="form-control"
-                placeholder="Commencer à taper pour voir les suggestions..."
+                :placeholder="translate('consignment.fields.epiEpcPlaceholder')"
                 @input="handleEpiEpcInput"
                 @keydown.enter.prevent="addCustomEpiEpc"
                 @keydown.escape="hideSuggestions"
@@ -91,7 +91,7 @@
                 v-model="dangerQuery"
                 type="text"
                 class="form-control"
-                placeholder="Commencer à taper pour voir les dangers..."
+                :placeholder="translate('consignment.fields.dangerPlaceholder')"
                 @input="handleDangerInput"
                 @keydown.enter.prevent="addCustomDanger"
                 @keydown.escape="hideDangerSuggestions"
@@ -121,7 +121,7 @@
               v-model="data.warnings.analyseRisques"
               class="form-control markdown-support"
               rows="10"
-              placeholder="Analyse détaillée des risques...&#10;&#10;Exemple (markdown supporté):&#10;- **Risque électrique**: Nécessite consignation complète&#10;- **Mesures préventives**:&#10;  - Vérifier VAT avant intervention&#10;  - Porter EPI électrique adapté"
+              :placeholder="translate('consignment.fields.riskAnalysisPlaceholder')"
             />
             <div v-if="analyseRisquesPreview" class="markdown-preview" v-html="analyseRisquesPreview"/>
           </div>
@@ -132,18 +132,18 @@
       <section class="card material-section">
         <h2>{{ translate('consignment.requiredMaterial') }}</h2>
         <div class="material-input-group">
-          <input v-model="newMaterial.designation" type="text" class="form-control" placeholder="Désignation" @keypress.enter="addMaterial">
-          <input v-model.number="newMaterial.quantity" type="number" class="form-control" placeholder="Nombre" min="1">
-          <input v-model.number="newMaterial.price" type="number" class="form-control" placeholder="Prix Unitaire HT (€)" min="0" step="0.01">
-          <button class="btn btn-primary" @click="addMaterial">Ajouter</button>
+          <input v-model="newMaterial.designation" type="text" class="form-control" :placeholder="translate('consignment.fields.designationPlaceholder')" @keypress.enter="addMaterial">
+          <input v-model.number="newMaterial.quantity" type="number" class="form-control" :placeholder="translate('consignment.fields.quantityPlaceholder')" min="1">
+          <input v-model.number="newMaterial.price" type="number" class="form-control" :placeholder="`${translate('consignment.fields.unitPrice')} (€)`" min="0" step="0.01">
+          <button class="btn btn-primary" @click="addMaterial">{{ translate('consignment.fields.add') }}</button>
         </div>
         <div class="material-table">
           <div class="material-table-header">
-            <div>Désignation</div>
-            <div>Nombre</div>
-            <div>Prix Unitaire HT</div>
-            <div>Total HT</div>
-            <div>Actions</div>
+            <div>{{ translate('consignment.fields.designation') }}</div>
+            <div>{{ translate('consignment.fields.quantity') }}</div>
+            <div>{{ translate('consignment.fields.unitPrice') }}</div>
+            <div>{{ translate('consignment.fields.total') }}</div>
+            <div>{{ translate('consignment.fields.actions') }}</div>
           </div>
           <div class="material-table-body">
             <div v-for="(material, index) in data.materials" :key="index" class="material-row">
@@ -152,14 +152,14 @@
               <div>{{ material.price.toFixed(2) }} €</div>
               <div>{{ (material.quantity * material.price).toFixed(2) }} €</div>
               <div>
-                <button class="btn btn-danger btn-small" @click="removeMaterial(index)">Supprimer</button>
+                <button class="btn btn-danger btn-small" @click="removeMaterial(index)">{{ translate('consignment.fields.remove') }}</button>
               </div>
             </div>
           </div>
           <div class="material-table-footer">
             <div/>
             <div/>
-            <div><strong>Total:</strong></div>
+            <div><strong>{{ translate('consignment.fields.totalLabel') }}:</strong></div>
             <div><strong>{{ materialTotal.toFixed(2) }} €</strong></div>
             <div/>
           </div>
@@ -171,26 +171,26 @@
         <h2>{{ translate('consignment.references') }}</h2>
         <div class="reference-controls">
           <div class="reference-input-group">
-            <input v-model="newReference.document" type="text" class="form-control" placeholder="Document" @keypress.enter="addReference">
-            <input v-model="newReference.page" type="text" class="form-control" placeholder="Page">
+            <input v-model="newReference.document" type="text" class="form-control" :placeholder="translate('consignment.fields.document')" @keypress.enter="addReference">
+            <input v-model="newReference.page" type="text" class="form-control" :placeholder="translate('consignment.fields.page')">
             <select v-model="newReference.type" class="form-control">
-              <option value="">Sélectionner le type...</option>
-              <option value="Instructions, notes, guides">Instructions, notes, guides</option>
-              <option value="Dossier technique">Dossier technique</option>
-              <option value="Règlement intérieur">Règlement intérieur</option>
-              <option value="Normes nationales">Normes nationales</option>
-              <option value="Normes internationales">Normes internationales</option>
+              <option value="">{{ translate('consignment.fields.selectType') }}</option>
+              <option value="Instructions, notes, guides">{{ translate('consignment.fields.typeInstructions') }}</option>
+              <option value="Dossier technique">{{ translate('consignment.fields.typeTechnical') }}</option>
+              <option value="Règlement intérieur">{{ translate('consignment.fields.typeInternal') }}</option>
+              <option value="Normes nationales">{{ translate('consignment.fields.typeNational') }}</option>
+              <option value="Normes internationales">{{ translate('consignment.fields.typeInternational') }}</option>
             </select>
-            <button class="btn btn-primary" @click="addReference">Ajouter</button>
+            <button class="btn btn-primary" @click="addReference">{{ translate('consignment.fields.add') }}</button>
           </div>
-          <button class="btn btn-secondary" @click="sortReferences">🔤 Trier A-Z</button>
+          <button class="btn btn-secondary" @click="sortReferences">{{ translate('consignment.fields.sortAZ') }}</button>
         </div>
         <div class="reference-table">
           <div class="reference-table-header">
-            <div>Document</div>
-            <div>Page</div>
-            <div>Type</div>
-            <div>Actions</div>
+            <div>{{ translate('consignment.fields.document') }}</div>
+            <div>{{ translate('consignment.fields.page') }}</div>
+            <div>{{ translate('consignment.fields.type') }}</div>
+            <div>{{ translate('consignment.fields.actions') }}</div>
           </div>
           <div class="reference-table-body">
             <div v-for="(reference, index) in data.references" :key="index" class="reference-row">
@@ -198,7 +198,7 @@
               <div>{{ reference.page || '-' }}</div>
               <div>{{ reference.type }}</div>
               <div>
-                <button class="btn btn-danger btn-small" @click="removeReference(index)">Supprimer</button>
+                <button class="btn btn-danger btn-small" @click="removeReference(index)">{{ translate('consignment.fields.remove') }}</button>
               </div>
             </div>
           </div>
@@ -209,13 +209,13 @@
       <section class="card instructions-section">
         <h2>{{ translate('consignment.consignmentInstructions') }}</h2>
         <div class="instructions-controls">
-          <button class="btn btn-primary" @click="addStep">➕ Ajouter une étape</button>
+          <button class="btn btn-primary" @click="addStep">{{ translate('consignment.fields.addStep') }}</button>
         </div>
         <div class="instructions-table">
           <div class="table-header">
-            <div class="col-repere">Repère</div>
-            <div class="col-instruction">Instruction</div>
-            <div class="col-photo">Photo</div>
+            <div class="col-repere">{{ translate('consignment.fields.reference') }}</div>
+            <div class="col-instruction">{{ translate('consignment.fields.instruction') }}</div>
+            <div class="col-photo">{{ translate('consignment.fields.photoLabel') }}</div>
           </div>
           <div class="table-body">
             <div v-for="(step, index) in data.steps" :key="step.id" class="step-row">
@@ -223,13 +223,13 @@
                 <input v-model="step.repere" type="text" :placeholder="`Repère ${index + 1}`">
               </div>
               <div class="col-instruction">
-                <textarea v-model="step.instruction" placeholder="Description de l'instruction..."/>
+                <textarea v-model="step.instruction" :placeholder="translate('consignment.fields.instructionPlaceholder')"/>
               </div>
               <div class="col-photo">
                 <div class="photo-upload">
                   <img v-if="step.photo && step.photo.startsWith('data:image/')" :src="step.photo" class="photo-preview" alt="Photo">
                   <label class="photo-label">
-                    📷 {{ step.photo && step.photo.startsWith('data:image/') ? 'Changer' : 'Ajouter' }} photo
+                    {{ translate('consignment.fields.photo') }} {{ step.photo && step.photo.startsWith('data:image/') ? translate('consignment.fields.changePhoto') : translate('consignment.fields.addPhoto') }} photo
                     <input type="file" accept="image/*" style="display: none;" @change="handlePhotoUpload($event, step.id)">
                   </label>
                 </div>
@@ -239,7 +239,7 @@
                   <button class="btn btn-secondary btn-small btn-reorder" :disabled="index === 0" @click="moveStep(index, -1)">⬆️</button>
                   <button class="btn btn-secondary btn-small btn-reorder" :disabled="index === data.steps.length - 1" @click="moveStep(index, 1)">⬇️</button>
                 </div>
-                <button class="btn btn-danger btn-small" @click="removeStep(step.id)">🗑️ Supprimer l'étape</button>
+                <button class="btn btn-danger btn-small" @click="removeStep(step.id)">🗑️ {{ translate('consignment.fields.removeStep') }}</button>
               </div>
             </div>
           </div>
@@ -250,13 +250,13 @@
       <section class="card improvement-section">
         <h2>{{ translate('consignment.improvements') }}</h2>
         <div class="improvement-input-group">
-          <input v-model="newImprovement" type="text" class="form-control" placeholder="Ajouter une suggestion..." @keypress.enter="addImprovement">
-          <button class="btn btn-primary" @click="addImprovement">Ajouter</button>
+          <input v-model="newImprovement" type="text" class="form-control" :placeholder="translate('consignment.fields.suggestionPlaceholder')" @keypress.enter="addImprovement">
+          <button class="btn btn-primary" @click="addImprovement">{{ translate('consignment.fields.add') }}</button>
         </div>
         <ul class="improvement-list">
           <li v-for="(improvement, index) in data.improvements" :key="index">
             <span>{{ improvement }}</span>
-            <button class="btn btn-danger btn-small" @click="removeImprovement(index)">Supprimer</button>
+            <button class="btn btn-danger btn-small" @click="removeImprovement(index)">{{ translate('consignment.fields.remove') }}</button>
           </li>
         </ul>
       </section>
@@ -902,7 +902,7 @@ const printPage = async () => {
 
     if (data.info.titre) {
       doc.setFont('times', 'bold')
-      doc.text('Titre: ', margin, y)
+      doc.text(`${translate('consignment.fields.title')} `, margin, y)
       doc.setFont('times', 'normal')
       doc.text(data.info.titre, margin + 20, y)
       y += 6
@@ -910,7 +910,7 @@ const printPage = async () => {
 
     if (data.info.description) {
       doc.setFont('times', 'bold')
-      doc.text('Description: ', margin, y)
+      doc.text(`${translate('consignment.fields.description')} `, margin, y)
       y += 6
       doc.setFont('times', 'normal')
       const descLines = doc.splitTextToSize(data.info.description, contentWidth - 20)
@@ -921,13 +921,13 @@ const printPage = async () => {
     if (data.info.date || data.info.numero || data.info.personnel || data.info.localisation) {
       const infoText = []
       if (data.info.date)
-        infoText.push(`Date: ${data.info.date}`)
+        infoText.push(`${translate('consignment.fields.date')} ${data.info.date}`)
       if (data.info.numero)
-        infoText.push(`Numéro: ${data.info.numero}`)
+        infoText.push(`${translate('consignment.fields.number')} ${data.info.numero}`)
       if (data.info.personnel)
-        infoText.push(`Personnel: ${data.info.personnel}`)
+        infoText.push(`${translate('consignment.fields.personnel')} ${data.info.personnel}`)
       if (data.info.localisation)
-        infoText.push(`Localisation: ${data.info.localisation}`)
+        infoText.push(`${translate('consignment.fields.location')} ${data.info.localisation}`)
       doc.text(infoText.join(' | '), margin, y)
       y += 8
     }
@@ -935,7 +935,7 @@ const printPage = async () => {
     // EPI/EPC
     if (data.epiEpc && data.epiEpc.length > 0) {
       doc.setFont('times', 'bold')
-      doc.text('EPI/EPC requis: ', margin, y)
+      doc.text(`${translate('consignment.fields.epiEpc')} `, margin, y)
       y += 6
       doc.setFont('times', 'normal')
 
