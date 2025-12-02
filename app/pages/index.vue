@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 const { t, locale } = useI18n()
 
@@ -34,23 +34,32 @@ let timeInterval = null
 
 const updateDateTime = () => {
   const now = new Date()
-  const currentLocale = locale.value
   
-  const days = currentLocale === 'fr' 
-    ? [t('home.days.sunday'), t('home.days.monday'), t('home.days.tuesday'), t('home.days.wednesday'), t('home.days.thursday'), t('home.days.friday'), t('home.days.saturday')]
-    : [t('home.days.sunday'), t('home.days.monday'), t('home.days.tuesday'), t('home.days.wednesday'), t('home.days.thursday'), t('home.days.friday'), t('home.days.saturday')]
+  const days = [
+    t('home.days.sunday'), t('home.days.monday'), t('home.days.tuesday'), 
+    t('home.days.wednesday'), t('home.days.thursday'), t('home.days.friday'), 
+    t('home.days.saturday')
+  ]
   
-  const months = currentLocale === 'fr'
-    ? [t('home.months.january'), t('home.months.february'), t('home.months.march'), t('home.months.april'), t('home.months.may'), t('home.months.june'), t('home.months.july'), t('home.months.august'), t('home.months.september'), t('home.months.october'), t('home.months.november'), t('home.months.december')]
-    : [t('home.months.january'), t('home.months.february'), t('home.months.march'), t('home.months.april'), t('home.months.may'), t('home.months.june'), t('home.months.july'), t('home.months.august'), t('home.months.september'), t('home.months.october'), t('home.months.november'), t('home.months.december')]
+  const months = [
+    t('home.months.january'), t('home.months.february'), t('home.months.march'), 
+    t('home.months.april'), t('home.months.may'), t('home.months.june'), 
+    t('home.months.july'), t('home.months.august'), t('home.months.september'), 
+    t('home.months.october'), t('home.months.november'), t('home.months.december')
+  ]
 
   currentDate.value = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`
-  currentTime.value = now.toLocaleTimeString(currentLocale === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  currentTime.value = now.toLocaleTimeString(locale.value === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
 onMounted(() => {
   updateDateTime()
   timeInterval = setInterval(updateDateTime, 1000)
+})
+
+// Update date/time when locale changes
+watch(locale, () => {
+  updateDateTime()
 })
 
 onUnmounted(() => {
