@@ -220,9 +220,9 @@ Currently, this project does not have automated tests. When adding tests:
 ## Important Notes
 
 - The project uses **file-based routing** - pages in `app/pages/` become routes
-- **Nuxt 4** is used, which has some differences from Nuxt 3
-- The `.nuxt` directory is generated and should not be manually edited
-- ESLint config imports from `.nuxt/eslint.config.mjs` (generated file)
+- **Nuxt 4** is used with the `compatibilityDate: '2025-07-15'` configuration
+- The `.nuxt` directory is auto-generated during development and should not be manually edited
+- ESLint config imports from `.nuxt/eslint.config.mjs` (generated file, not from node_modules)
 - Always include `<LanguageSwitcher />` component in page layouts for consistency
 
 ## When Making Changes
