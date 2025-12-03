@@ -123,6 +123,8 @@
               rows="10"
               :placeholder="translate('consignment.fields.riskAnalysisPlaceholder')"
             />
+            <!-- Safe: HTML tags are stripped by marked.js renderer configuration -->
+            <!-- eslint-disable-next-line vue/no-v-html -->
             <div v-if="analyseRisquesPreview" class="markdown-preview" v-html="analyseRisquesPreview"/>
           </div>
         </div>
@@ -514,7 +516,7 @@ const preloadPictograms = async () => {
       const base64 = await loadImageAsBase64(`/resources/Pictogrammes_jpeg/OBLIGATION/${picto}`)
       pictograms[`OBLIGATION/${picto}`] = base64
     }
-    catch (e) {
+    catch {
       console.warn(`Could not load pictogram: ${picto}`)
     }
   }
@@ -525,7 +527,7 @@ const preloadPictograms = async () => {
       const base64 = await loadImageAsBase64(`/resources/Pictogrammes_jpeg/AVERTISSEMENT_DANGER/${picto}`)
       pictograms[`DANGER/${picto}`] = base64
     }
-    catch (e) {
+    catch {
       console.warn(`Could not load pictogram: ${picto}`)
     }
   }
