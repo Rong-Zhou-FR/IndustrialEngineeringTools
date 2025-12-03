@@ -298,7 +298,7 @@ import { marked } from 'marked'
 import { useI18n } from 'vue-i18n'
 import { useSafetyData } from '~/composables/useSafetyData'
 
-const { t: translate } = useI18n()
+const { t: translate, locale } = useI18n()
 const { loadData, dangers, protectiveEquipments, pictograms } = useSafetyData()
 
 // Configure marked for security
@@ -356,7 +356,6 @@ let stepCounter = 0
 const ppeCPESuggestions = computed(() => {
   if (!protectiveEquipments.value) return { PPE: {}, CPE: {} }
   
-  const { locale } = useI18n()
   const lang = locale.value === 'fr' ? 'fr' : 'en'
   
   return {
@@ -377,7 +376,6 @@ const ppeCPESuggestions = computed(() => {
 const dangerSuggestions = computed(() => {
   if (!dangers.value) return []
   
-  const { locale } = useI18n()
   const lang = locale.value === 'fr' ? 'fr' : 'en'
   
   return dangers.value.dangers.map(d => ({
@@ -393,7 +391,6 @@ const dangerSuggestions = computed(() => {
 const getPPECPEPictogram = (name) => {
   if (!protectiveEquipments.value || !pictograms.value) return 'OBLIGATION-general.jpg'
   
-  const { locale } = useI18n()
   const lang = locale.value === 'fr' ? 'fr' : 'en'
   
   // Search in all categories for matching equipment
@@ -418,7 +415,6 @@ const getPPECPEPictogram = (name) => {
 const getDangerPictogram = (dangerName) => {
   if (!dangers.value || !pictograms.value) return 'DANGER-general.jpg'
   
-  const { locale } = useI18n()
   const lang = locale.value === 'fr' ? 'fr' : 'en'
   
   const danger = dangers.value.dangers.find(d => d[lang] === dangerName)
