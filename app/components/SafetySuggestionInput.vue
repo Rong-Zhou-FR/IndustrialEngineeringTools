@@ -312,12 +312,11 @@ const isCategoryIndeterminate = (group: GroupedMatch): boolean => {
 const toggleCategory = (group: GroupedMatch, event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.checked) {
-    // Add all items from this category
-    group.items.forEach(item => {
-      if (!tempSelectedItems.value.some(selected => selected.name === item.name)) {
-        tempSelectedItems.value = [...tempSelectedItems.value, item]
-      }
-    })
+    // Add all items from this category that aren't already selected
+    const newItems = group.items.filter(item => 
+      !tempSelectedItems.value.some(selected => selected.name === item.name)
+    )
+    tempSelectedItems.value = [...tempSelectedItems.value, ...newItems]
   } else {
     // Remove all items from this category
     tempSelectedItems.value = tempSelectedItems.value.filter(
